@@ -4,9 +4,11 @@ import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Builder(toBuilder = true)
 @Getter
+@ToString(exclude = "password")
 @AllArgsConstructor
 public class UserRequestDTO {
     @Email(message = "Wrong email format")

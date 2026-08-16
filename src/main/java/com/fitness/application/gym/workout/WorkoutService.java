@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -28,9 +26,11 @@ import com.fitness.application.gym.workout.repository.WorkoutSetRepository;
 import com.fitness.application.users.entity.User;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WorkoutService {
 
     private final WorkoutRepository workoutRepository;
@@ -42,14 +42,11 @@ public class WorkoutService {
 
     private final WorkoutMapper workoutMapper;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     public Workout startWorkout(User user) {
         Workout workout = Workout.builder()
                                 .status(Workout.Status.IN_PROGRESS)
                                 .createdBy(user)
                                 .build();
-        logger.atInfo().addArgument("Started workout").addArgument(workout.toString()).log();
         return workoutRepository.save(workout);
     }
 
@@ -92,7 +89,7 @@ public class WorkoutService {
         Workout workout = workoutRepository.findById(workoutId)
                 .orElseThrow(() -> new IllegalArgumentException("Workout not found: " + workoutId));
 
-        logger.info("Fetching info for workout ID: {} [Status: {}]", workoutId, workout.getStatus());
+        log.info("Fetching info for workout ID: {} [Status: {}]", workoutId, workout.getStatus());
 
         List<WorkoutExercise> exercises =
                 workoutExerciseRepository.findByWorkoutIdOrderByOrderNumAsc(workoutId);
@@ -105,7 +102,7 @@ public class WorkoutService {
                 .map(e -> e.getId())
                 .toList();
 
-        logger.info("Found {} exercises: {} (IDs: {})", exercises.size(), exerciseNames, exerciseIds);
+        log.info("Found {} exercises: {} (IDs: {})", exercises.size(), exerciseNames, exerciseIds);
 
         List<WorkoutSet> allSets = exerciseIds.isEmpty()
                 ? List.of()
@@ -115,13 +112,13 @@ public class WorkoutService {
                 .collect(Collectors.groupingBy(s -> s.getWorkoutExercise().getId()));
 
         if (allSets.isEmpty()) {
-            logger.info("No sets found for this workout.");
+            log.info("No sets found for this workout.");
         } else {
             String setsSummary = setsByExerciseId.entrySet().stream()
                     .map(e -> "Exercise ID " + e.getKey() + " -> " + e.getValue().size() + " sets")
                     .collect(Collectors.joining(", "));
             
-            logger.info("Total sets: {}. Summary: [{}]", allSets.size(), setsSummary);
+            log.info("Total sets: {}. Summary: [{}]", allSets.size(), setsSummary);
         }
 
         return workoutMapper.toWorkoutInfo(workout, exercises, setsByExerciseId);

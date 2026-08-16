@@ -2,9 +2,6 @@ package com.fitness.application.users;
 
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,66 +15,68 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitness.application.base.DTO.PageDTO;
 import com.fitness.application.users.DTO.UserRequestDTO;
 import com.fitness.application.users.DTO.UserResponseDTO;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/users")
+@Slf4j
 public class UserController {
     
     private final UserService userService;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     @GetMapping("/{uuid}")
     public ResponseEntity<UserResponseDTO> findByUuid(@PathVariable UUID uuid){
-        logger.info("GET /users/{}", uuid.toString());
+        log.info("GET /users/{}", uuid.toString());
         return ResponseEntity.ok().body(userService.getByUuid(uuid));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{uuid}")
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID uuid, @RequestBody UserRequestDTO user){
-        logger.info("PUT /users/{}", uuid.toString());
+        log.info("PUT /users/{}", uuid.toString());
         return ResponseEntity.ok().body(userService.update(user, uuid));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<UserResponseDTO> create(@Valid @RequestBody UserRequestDTO user){
-        logger.info("POST /users {}", user.toString());
+        log.info("POST /users {}", user.toString());
         return ResponseEntity.ok().body(userService.create(user));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{uuid}")
     public ResponseEntity<HttpStatus> delete(@PathVariable UUID uuid){
-        logger.info("DELETE /users/{}", uuid.toString());
+        log.info("DELETE /users/{}", uuid.toString());
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/")
-    public ResponseEntity<Page<UserResponseDTO>> getAll(
+    public ResponseEntity<PageDTO<UserResponseDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        logger.info("GET /users?page={}&size={}", page, size);
+        log.info("GET /users?page={}&size={}", page, size);
         return ResponseEntity.ok().body(userService.getAll(page, size));
     }
 
     @GetMapping("/check/username")
     public ResponseEntity<Boolean> checkUsername(String username){
-        logger.info("GET /check/username for {}", username);
+        log.info("GET /check/username for {}", username);
         return ResponseEntity.ok().body(userService.checkUsername(username));
     }
 
     @GetMapping("/check/email")
     public ResponseEntity<Boolean> checkEmail(String email){
-        logger.info("GET /check/email for {}", email);
+        log.info("GET /check/email for {}", email);
         return ResponseEntity.ok().body(userService.checkEmail(email));
     }
 }

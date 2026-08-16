@@ -3,6 +3,8 @@ logging:
     root: INFO
     com.fitness.application: INFO
     org.hibernate.SQL: INFO
+    package com.fitness.application.security: DEBUG
+
   pattern:
     dateformat: ""
     console: "%clr(%-5level) %clr(%-40.40logger{39}){cyan} : %msg%n%wEx"
@@ -17,4 +19,6 @@ spring:
     properties:
       hibernate:
         format_sql: false
-    
+
+jwt:
+  secret-key: ${SECRET_KEY}

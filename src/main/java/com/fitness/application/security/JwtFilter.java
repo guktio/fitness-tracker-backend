@@ -3,8 +3,6 @@ package com.fitness.application.security;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,14 +15,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final UserRepository userRepository;
 
@@ -50,10 +48,10 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 });
             } else {
-                logger.warn("Invalid JWT token");
+                log.warn("Invalid JWT token");
             }
         } catch (Exception e) {
-            logger.warn("Failed to process JWT token: {}", e.getMessage());
+            log.warn("Failed to process JWT token: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);

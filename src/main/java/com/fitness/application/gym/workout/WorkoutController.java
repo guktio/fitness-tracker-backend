@@ -2,12 +2,9 @@ package com.fitness.application.gym.workout;
 
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,36 +20,39 @@ import com.fitness.application.gym.workout.DTO.WorkoutInfo;
 import com.fitness.application.gym.workout.DTO.WorkoutSetDTO;
 import com.fitness.application.gym.workout.entity.Workout;
 import com.fitness.application.gym.workout.entity.WorkoutSet;
-import com.fitness.application.security.UserDetailsImpl;
+import com.fitness.application.security.CurrentUser;
+import com.fitness.application.users.UserService;
 import com.fitness.application.users.entity.User;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/gym")
 @RequiredArgsConstructor
+@Slf4j
 public class WorkoutController {
 
     private final WorkoutService workoutService;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final UserService userService;
 
     @PostMapping("/workout/start")
-    public Workout startWorkout(Authentication authentication) {
-        User user = ((UserDetailsImpl) authentication.getPrincipal()).getUser();
-        logger.info("POST /workout/start with Authentication: {}", authentication.toString());
+    public Workout startWorkout(@CurrentUser User user) {
+        userService.getUserOrThrowNotFound(user);
+        log.info("POST /workout/start with Authentication: {}", user.toString());
         return workoutService.startWorkout(user);
     }
 
     @PostMapping("/workout/stop/{id}")
     public Workout stopWorkout(@PathVariable Long id) {
-        logger.info("POST /workout/stop/{}", id);
+        log.info("POST /workout/stop/{}", id);
         return workoutService.completeWorkout(id);
     }
 
     @GetMapping("/workout/{id}")
     public WorkoutInfo getWorkoutInfo(@PathVariable Long id) {
-        logger.info("GET /workout/{}", id);
+        log.info("GET /workout/{}", id);
         return workoutService.getWorkoutInfo(id);
     }
 
@@ -60,10 +60,10 @@ public class WorkoutController {
     public WorkoutExerciseDTO addExerciseToWorkoutDTO(
         @PathVariable Long id,
         @RequestBody ExerciseAddDTO exerciseAddDTO,
-        Authentication authentication
+        @CurrentUser User user
     ) {
-        logger.info("POST /workout/addExerciseToWorkout/{} with DTO: {} & Authentication: {}", id, exerciseAddDTO.toString(), authentication.toString());
-        User user = ((UserDetailsImpl) authentication.getPrincipal()).getUser();
+        userService.getUserOrThrowNotFound(user);
+        log.info("POST /workout/addExerciseToWorkout/{} with DTO: {} & Authentication: {}", id, exerciseAddDTO.toString(), user.toString());
         return workoutService.addExerciseToWorkout(id, exerciseAddDTO, user);
     }
 
@@ -71,9 +71,10 @@ public class WorkoutController {
     public WorkoutSetDTO addSet(
             @PathVariable Long workoutExerciseId,
             @RequestBody WorkoutSet set,
-            Authentication authentication) {
-        User user = ((UserDetailsImpl) authentication.getPrincipal()).getUser();
-        logger.info("POST /workout-exercise/{}/set with DTO: {} & Authentication: {}" , workoutExerciseId, set.toString(), authentication.toString());
+            @CurrentUser User user
+    ) {
+        userService.getUserOrThrowNotFound(user);
+        log.info("POST /workout-exercise/{}/set with DTO: {} & Authentication: {}" , workoutExerciseId, set.toString(), user.toString());
         return workoutService.addSetToWorkoutExercise(workoutExerciseId, set, user);
     }
 
@@ -82,7 +83,7 @@ public class WorkoutController {
         @PathVariable UUID uuid,
         @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        logger.info("GET /user-workout/{} with {}", uuid , pageable.toString());
+        log.info("GET /user-workout/{} with {}", uuid , pageable.toString());
         return workoutService.getWorkoutSlice(uuid, pageable);
     }
 

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.fitness.application.base.DTO.PageDTO;
 import com.fitness.application.security.UserDetailsImpl;
 import com.fitness.application.users.DTO.UserRequestDTO;
 import com.fitness.application.users.DTO.UserResponseDTO;
@@ -16,9 +17,11 @@ import com.fitness.application.users.entity.User;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService implements UserDetailsService{
 
     private final UserRepository userRepository;
@@ -52,9 +55,13 @@ public class UserService implements UserDetailsService{
         return userMapper.toResponseDto(userRepository.save(saved));
     }
 
-    public Page<UserResponseDTO> getAll(int page, int size){
-        return userRepository.findAll(Pageable.ofSize(size).withPage(page))
-            .map(userMapper::toResponseDto);
+    public PageDTO<UserResponseDTO> getAll(int page, int size){
+        Page<User> users = userRepository.findAll(Pageable.ofSize(size).withPage(page));
+        return new PageDTO<UserResponseDTO>(
+            users.getContent().stream().map(userMapper::toResponseDto).toList(), 
+            users.getPageable().getPageNumber(), 
+            users.getTotalPages()
+        );
     }
     
     public UserResponseDTO getByUuid(UUID uuid){
@@ -79,5 +86,12 @@ public class UserService implements UserDetailsService{
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    public User getUserOrThrowNotFound(User user){
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+        return user;
     }
 }
