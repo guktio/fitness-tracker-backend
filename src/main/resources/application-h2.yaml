@@ -1,0 +1,36 @@
+logging:
+  level:
+    root: INFO
+    com.fitness.application: INFO
+    org.hibernate.SQL: INFO
+
+  pattern:
+    console: "%clr(%d{HH:mm:ss}){faint} %clr(-){faint} %clr(%-5p) %clr(%-25.25logger{25}){cyan} %clr(→){faint} %m%n%wEx"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+
+  h2:
+    console:
+      enabled: true 
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  

@@ -1,0 +1,3 @@
+# Gym tracker
+
+[<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/44209970-62de4133-2f05-4a8f-8955-8d3d8ed32d30?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D44209970-62de4133-2f05-4a8f-8955-8d3d8ed32d30%26entityType%3Dcollection%26workspaceId%3Ddb45adf4-03c5-4eff-94db-3fdd13e09359)

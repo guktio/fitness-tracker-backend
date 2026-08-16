@@ -1,0 +1,20 @@
+logging:
+  level:
+    root: INFO
+    com.fitness.application: INFO
+    org.hibernate.SQL: INFO
+  pattern:
+    dateformat: ""
+    console: "%clr(%-5level) %clr(%-40.40logger{39}){cyan} : %msg%n%wEx"
+spring:
+  datasource:
+    url: ${DB_URL}
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+    

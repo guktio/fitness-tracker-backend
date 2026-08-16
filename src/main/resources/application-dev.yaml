@@ -1,0 +1,27 @@
+logging:
+  level:
+    root: INFO
+    com.fitness.application: DEBUG
+    org.hibernate.SQL: INFO
+
+  pattern:
+    console: "%clr(%d{HH:mm:ss}){faint} %clr(-){faint} %clr(%-5p) %clr(%-25.25logger{25}){cyan} %clr(→){faint} %m%n%wEx"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fitapp
+    username: fitapp
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false

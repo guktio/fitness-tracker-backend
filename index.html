@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IRON LOG — тренировочный дневник</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #10141a;
+    --surface: #181e26;
+    --surface-2: #202834;
+    --ink: #eef1f4;
+    --muted: #7c8896;
+    --accent: #ff6a3d;
+    --accent-2: #ffd23f;
+    --line: #2a323d;
+    --danger: #ff5566;
+    --good: #4ad991;
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+  }
+  h1, h2, h3, .display {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0;
+  }
+  #root { min-height: 100vh; }
+
+  .plate-rule {
+    height: 4px;
+    width: 56px;
+    background: repeating-linear-gradient(90deg, var(--accent) 0 10px, var(--accent-2) 10px 20px);
+    border-radius: 2px;
+    margin: 6px 0 18px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand .mark { color: var(--accent); font-size: 22px; font-weight: 700; }
+  .brand .sub { color: var(--muted); font-size: 11px; letter-spacing: 0.15em; }
+
+  .baseurl-row { display: flex; align-items: center; gap: 8px; }
+  .baseurl-row input { width: 240px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .status-dot.ok { background: var(--good); }
+
+  .shell { display: flex; min-height: calc(100vh - 60px); }
+  .nav { width: 200px; background: var(--surface); border-right: 1px solid var(--line); padding: 18px 0; flex-shrink: 0; }
+  .nav button {
+    display: block; width: 100%; text-align: left; padding: 12px 20px;
+    background: none; border: none; color: var(--muted); font-family: 'Oswald', sans-serif;
+    text-transform: uppercase; font-size: 14px; letter-spacing: 0.04em; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .nav button:hover { color: var(--ink); }
+  .nav button.active { color: var(--ink); border-left-color: var(--accent); background: var(--surface-2); }
+
+  .content { flex: 1; padding: 28px 32px; max-width: 900px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 20px;
+  }
+
+  label { display: block; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  input, select {
+    width: 100%; padding: 9px 10px; background: var(--bg); border: 1px solid var(--line);
+    color: var(--ink); border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  .field { margin-bottom: 12px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > .field { flex: 1; min-width: 120px; }
+
+  button.btn {
+    font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.04em;
+    font-weight: 600; font-size: 13px; padding: 10px 18px; border-radius: 4px; border: none;
+    background: var(--accent); color: #1a1207; cursor: pointer;
+  }
+  button.btn:hover { filter: brightness(1.08); }
+  button.btn.secondary { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  button.btn.ghost { background: none; border: 1px solid var(--line); color: var(--muted); }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .toggle-row { display: flex; gap: 8px; margin-bottom: 18px; }
+  .toggle-row button {
+    flex: 1; padding: 10px; background: var(--surface-2); border: 1px solid var(--line);
+    color: var(--muted); font-family: 'Oswald', sans-serif; text-transform: uppercase; cursor: pointer; border-radius: 4px;
+  }
+  .toggle-row button.active { color: var(--bg); background: var(--accent-2); border-color: var(--accent-2); }
+
+  .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .auth-card { width: 380px; }
+
+  .error-box { color: var(--danger); font-size: 13px; margin-top: 8px; border-left: 2px solid var(--danger); padding-left: 8px; }
+  .ok-box { color: var(--good); font-size: 13px; margin-top: 8px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+  .pill.status-in_progress { color: var(--accent-2); border-color: var(--accent-2); }
+  .pill.status-completed { color: var(--good); border-color: var(--good); }
+
+  .empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
+
+  .ex-block { border-left: 2px solid var(--accent); padding-left: 12px; margin-bottom: 16px; }
+  .ex-block h3 { font-size: 15px; }
+  .ex-block .setline { color: var(--muted); font-size: 13px; padding: 3px 0; }
+  .ex-block .setline b { color: var(--ink); }
+
+  pre.raw { background: var(--bg); border: 1px solid var(--line); padding: 10px; border-radius: 4px; font-size: 12px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback } = React;
+
+function useApi(baseUrl, token, setConnected) {
+  return useCallback(async (path, options = {}) => {
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    let res;
+    try {
+      res = await fetch(baseUrl.replace(/\/+$/, '') + path, { ...options, headers });
+    } catch (e) {
+      setConnected(false);
+      throw new Error('Не удалось достучаться до ' + baseUrl + '. Backend запущен? CORS настроен?');
+    }
+    setConnected(true);
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) || res.status + ' ' + res.statusText;
+      throw new Error(msg);
+    }
+    return data;
+  }, [baseUrl, token, setConnected]);
+}
+
+function AuthScreen({ baseUrl, setBaseUrl, onAuthed, api }) {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setErr(null);
+    setLoading(true);
+    try {
+      const path = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const body = mode === 'login' ? { email, password } : { email, password, nickname };
+      const data = await api(path, { method: 'POST', body: JSON.stringify(body) });
+      onAuthed(data);
+    } catch (e2) {
+      setErr(e2.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-wrap">
+      <div className="card auth-card">
+        <div className="brand" style={{ marginBottom: 4 }}>
+          <span className="mark">IRON LOG</span>
+        </div>
+        <div className="plate-rule"></div>
+        <div className="field">
+          <label>Адрес backend</label>
+          <input value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="http://localhost:8080" />
+        </div>
+        <div className="toggle-row">
+          <button className={mode === 'login' ? 'active' : ''} onClick={() => setMode('login')}>Вход</button>
+          <button className={mode === 'register' ? 'active' : ''} onClick={() => setMode('register')}>Регистрация</button>
+        </div>
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>Email</label>
+            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Пароль</label>
+            <input type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+          </div>
+          {mode === 'register' && (
+            <div className="field">
+              <label>Никнейм (необязательно)</label>
+              <input value={nickname} onChange={e => setNickname(e.target.value)} />
+            </div>
+          )}
+          <button className="btn" type="submit" disabled={loading} style={{ width: '100%' }}>
+            {loading ? 'Подождите…' : (mode === 'login' ? 'Войти' : 'Создать аккаунт')}
+          </button>
+        </form>
+        {err && <div className="error-box">{err}</div>}
+      </div>
+    </div>
+  );
+}
+
+function ProfileTab({ api, user }) {
+  const [who, setWho] = useState(user || null);
+  const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = async () => {
+    setErr(null); setLoading(true);
+    try {
+      const data = await api('/api/auth/whoami');
+      setWho(data);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  };
+
+  return (
+    <div>
+      <h2>Профиль</h2>
+      <div className="plate-rule"></div>
+      <div className="card">
+        <button className="btn secondary" onClick={load} disabled={loading}>
+          {loading ? 'Загрузка…' : 'Обновить (whoami)'}
+        </button>
+        {err && <div className="error-box">{err}</div>}
+        {who && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ marginBottom: 6 }}><b>Email:</b> {who.email || who.username}</div>
+            {who.nickname && <div style={{ marginBottom: 6 }}><b>Никнейм:</b> {who.nickname}</div>}
+            {who.roles && (
+              <div style={{ marginBottom: 6 }}>
+                <b>Роли:</b>{' '}
+                {(Array.isArray(who.roles) ? who.roles : Object.keys(who.roles)).map((r, i) => (
+                  <span key={i} className="pill" style={{ marginRight: 6 }}>{r.authority || r}</span>
+                ))}
+              </div>
+            )}
+            <pre className="raw">{JSON.stringify(who, null, 2)}</pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ExercisesTab({ api, onExercisesLoaded, exercises }) {
+  const [name, setName] = useState('');
+  const [muscleGroup, setMuscleGroup] = useState('');
+  const [err, setErr] = useState(null);
+  const [ok, setOk] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    setErr(null);
+    try {
+      const data = await api('/api/gym/exercise');
+      onExercisesLoaded(Array.isArray(data) ? data : []);
+    } catch (e) { setErr(e.message); }
+  }, [api, onExercisesLoaded]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const create = async (e) => {
+    e.preventDefault();
+    setErr(null); setOk(null); setLoading(true);
+    try {
+      await api('/api/gym/exercise', { method: 'POST', body: JSON.stringify({ name, muscleGroup }) });
+      setOk('Упражнение создано');
+      setName(''); setMuscleGroup('');
+      load();
+    } catch (e2) { setErr(e2.message); } finally { setLoading(false); }
+  };
+
+  return (
+    <div>
+      <h2>Упражнения</h2>
+      <div className="plate-rule"></div>
+
+      <div className="card">
+        <h3 style={{ marginBottom: 12 }}>Новое упражнение</h3>
+        <form onSubmit={create}>
+          <div className="row">
+            <div className="field">
+              <label>Название</label>
+              <input required value={name} onChange={e => setName(e.target.value)} placeholder="Жим лёжа" />
+            </div>
+            <div className="field">
+              <label>Группа мышц</label>
+              <input value={muscleGroup} onChange={e => setMuscleGroup(e.target.value)} placeholder="Грудь" />
+            </div>
+          </div>
+          <button className="btn" type="submit" disabled={loading}>{loading ? 'Сохранение…' : 'Создать'}</button>
+        </form>
+        {err && <div className="error-box">{err}</div>}
+        {ok && <div className="ok-box">{ok}</div>}
+      </div>
+
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <h3>Список</h3>
+          <button className="btn ghost" onClick={load}>Обновить</button>
+        </div>
+        {exercises.length === 0 ? (
+          <div className="empty">Пока нет упражнений</div>
+        ) : (
+          <table>
+            <thead><tr><th>ID</th><th>Название</th><th>Группа мышц</th></tr></thead>
+            <tbody>
+              {exercises.map(ex => (
+                <tr key={ex.id}><td>{ex.id}</td><td>{ex.name}</td><td>{ex.muscleGroup || '—'}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WorkoutTab({ api, exercises }) {
+  const [currentWorkout, setCurrentWorkout] = useState(null);
+  const [workoutIdInput, setWorkoutIdInput] = useState('');
+  const [workoutInfo, setWorkoutInfo] = useState(null);
+  const [err, setErr] = useState(null);
+  const [ok, setOk] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const [exerciseId, setExerciseId] = useState('');
+  const [orderNum, setOrderNum] = useState('1');
+
+  const [weId, setWeId] = useState('');
+  const [setNumber, setSetNumber] = useState('1');
+  const [weight, setWeight] = useState('');
+  const [reps, setReps] = useState('');
+  const [rpe, setRpe] = useState('');
+
+  const notify = (fn) => { setErr(null); setOk(null); return fn(); };
+
+  const start = async () => {
+    notify(async () => {
+      setLoading(true);
+      try {
+        const w = await api('/api/gym/workout/start', { method: 'POST' });
+        setCurrentWorkout(w);
+        setWorkoutIdInput(String(w.id));
+        setOk('Тренировка начата, ID ' + w.id);
+      } catch (e) { setErr(e.message); } finally { setLoading(false); }
+    });
+  };
+
+  const stop = async () => {
+    if (!currentWorkout) return;
+    notify(async () => {
+      setLoading(true);
+      try {
+        const w = await api('/api/gym/workout/stop/' + currentWorkout.id, { method: 'POST' });
+        setCurrentWorkout(w);
+        setOk('Тренировка завершена');
+      } catch (e) { setErr(e.message); } finally { setLoading(false); }
+    });
+  };
+
+  const loadInfo = async () => {
+    if (!workoutIdInput) return;
+    notify(async () => {
+      setLoading(true);
+      try {
+        const info = await api('/api/gym/workout/' + workoutIdInput);
+        setWorkoutInfo(info);
+      } catch (e) { setErr(e.message); } finally { setLoading(false); }
+    });
+  };
+
+  const addExercise = async (e) => {
+    e.preventDefault();
+    if (!workoutIdInput || !exerciseId) return;
+    notify(async () => {
+      setLoading(true);
+      try {
+        await api('/api/gym/workout/addExerciseToWorkout/' + workoutIdInput, {
+          method: 'POST',
+          body: JSON.stringify({ exerciseId: Number(exerciseId), orderNum: Number(orderNum) })
+        });
+        setOk('Упражнение добавлено в тренировку');
+        loadInfo();
+      } catch (e2) { setErr(e2.message); } finally { setLoading(false); }
+    });
+  };
+
+  const addSet = async (e) => {
+    e.preventDefault();
+    if (!weId) return;
+    notify(async () => {
+      setLoading(true);
+      try {
+        await api('/api/gym/workout-exercise/' + weId + '/set', {
+          method: 'POST',
+          body: JSON.stringify({
+            setNumber: Number(setNumber),
+            weight: weight ? Number(weight) : null,
+            reps: reps ? Number(reps) : null,
+            rpe: rpe ? Number(rpe) : null
+          })
+        });
+        setOk('Подход добавлен');
+        loadInfo();
+      } catch (e2) { setErr(e2.message); } finally { setLoading(false); }
+    });
+  };
+
+  return (
+    <div>
+      <h2>Тренировка</h2>
+      <div className="plate-rule"></div>
+
+      <div className="card">
+        <div className="row" style={{ alignItems: 'center' }}>
+          <button className="btn" onClick={start} disabled={loading}>Начать тренировку</button>
+          <button className="btn secondary" onClick={stop} disabled={loading || !currentWorkout}>Завершить</button>
+        </div>
+        {currentWorkout && (
+          <div style={{ marginTop: 12 }}>
+            Активная тренировка: <b>#{currentWorkout.id}</b>{' '}
+            <span className={'pill status-' + (currentWorkout.status || '').toLowerCase()}>{currentWorkout.status}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginBottom: 10 }}>Открыть тренировку по ID</h3>
+        <div className="row">
+          <div className="field">
+            <label>ID тренировки</label>
+            <input value={workoutIdInput} onChange={e => setWorkoutIdInput(e.target.value)} placeholder="1" />
+          </div>
+        </div>
+        <button className="btn ghost" onClick={loadInfo} disabled={loading}>Загрузить</button>
+
+        {workoutInfo && (
+          <div style={{ marginTop: 18 }}>
+            <div style={{ marginBottom: 10 }}>
+              Тренировка <b>#{workoutInfo.workout && workoutInfo.workout.id}</b>{' '}
+              <span className={'pill status-' + ((workoutInfo.workout && workoutInfo.workout.status) || '').toLowerCase()}>
+                {workoutInfo.workout && workoutInfo.workout.status}
+              </span>
+            </div>
+            {(!workoutInfo.exerciseDTO || workoutInfo.exerciseDTO.length === 0) ? (
+              <div className="empty">В этой тренировке пока нет упражнений</div>
+            ) : (
+              workoutInfo.exerciseDTO.map((ex, i) => (
+                <div className="ex-block" key={i}>
+                  <h3>{ex.orderNum}. {ex.exerciseName}</h3>
+                  {(!ex.setDTO || ex.setDTO.length === 0) ? (
+                    <div className="setline">Подходов пока нет</div>
+                  ) : (
+                    ex.setDTO.map((s, j) => (
+                      <div className="setline" key={j}>
+                        Подход <b>{s.setNumber}</b> — {s.weight != null ? s.weight + ' кг' : '—'} × {s.reps != null ? s.reps : '—'} повт.
+                        {s.rpe != null ? ('  (RPE ' + s.rpe + ')') : ''}
+                      </div>
+                    ))
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginBottom: 10 }}>Добавить упражнение в тренировку</h3>
+        <form onSubmit={addExercise}>
+          <div className="row">
+            <div className="field">
+              <label>Упражнение</label>
+              <select required value={exerciseId} onChange={e => setExerciseId(e.target.value)}>
+                <option value="">— выбрать —</option>
+                {exercises.map(ex => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label>Порядковый номер</label>
+              <input type="number" min="1" value={orderNum} onChange={e => setOrderNum(e.target.value)} />
+            </div>
+          </div>
+          <button className="btn" type="submit" disabled={loading}>Добавить</button>
+        </form>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>
+          Используется ID тренировки из поля выше.
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginBottom: 10 }}>Добавить подход</h3>
+        <form onSubmit={addSet}>
+          <div className="row">
+            <div className="field">
+              <label>ID упражнения тренировки (workoutExerciseId)</label>
+              <input required value={weId} onChange={e => setWeId(e.target.value)} placeholder="1" />
+            </div>
+            <div className="field">
+              <label>№ подхода</label>
+              <input type="number" min="1" value={setNumber} onChange={e => setSetNumber(e.target.value)} />
+            </div>
+          </div>
+          <div className="row">
+            <div className="field">
+              <label>Вес, кг</label>
+              <input type="number" step="0.5" value={weight} onChange={e => setWeight(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Повторения</label>
+              <input type="number" value={reps} onChange={e => setReps(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>RPE</label>
+              <input type="number" step="0.5" value={rpe} onChange={e => setRpe(e.target.value)} />
+            </div>
+          </div>
+          <button className="btn" type="submit" disabled={loading}>Записать подход</button>
+        </form>
+      </div>
+
+      {err && <div className="error-box">{err}</div>}
+      {ok && <div className="ok-box">{ok}</div>}
+    </div>
+  );
+}
+
+function App() {
+  const [baseUrl, setBaseUrl] = useState('http://localhost:8080');
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
+  const [connected, setConnected] = useState(false);
+  const [tab, setTab] = useState('profile');
+  const [exercises, setExercises] = useState([]);
+
+  const api = useApi(baseUrl, token, setConnected);
+
+  const handleAuthed = (data) => {
+    setToken(data.token);
+    setUser(data.user || null);
+  };
+
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    setExercises([]);
+    setTab('profile');
+  };
+
+  if (!token) {
+    return <AuthScreen baseUrl={baseUrl} setBaseUrl={setBaseUrl} onAuthed={handleAuthed} api={api} />;
+  }
+
+  return (
+    <div>
+      <div className="topbar">
+        <div className="brand">
+          <span className="mark">IRON LOG</span>
+          <span className="sub">тренировочный дневник</span>
+        </div>
+        <div className="baseurl-row">
+          <span className={'status-dot ' + (connected ? 'ok' : '')}></span>
+          <input value={baseUrl} onChange={e => setBaseUrl(e.target.value)} />
+          <button className="btn ghost" onClick={logout}>Выйти</button>
+        </div>
+      </div>
+      <div className="shell">
+        <div className="nav">
+          <button className={tab === 'profile' ? 'active' : ''} onClick={() => setTab('profile')}>Профиль</button>
+          <button className={tab === 'exercises' ? 'active' : ''} onClick={() => setTab('exercises')}>Упражнения</button>
+          <button className={tab === 'workout' ? 'active' : ''} onClick={() => setTab('workout')}>Тренировка</button>
+        </div>
+        <div className="content">
+          {tab === 'profile' && <ProfileTab api={api} user={user} />}
+          {tab === 'exercises' && <ExercisesTab api={api} exercises={exercises} onExercisesLoaded={setExercises} />}
+          {tab === 'workout' && <WorkoutTab api={api} exercises={exercises} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
