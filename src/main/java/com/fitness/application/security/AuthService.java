@@ -32,7 +32,7 @@ public class AuthService {
 
     public AuthResponse register(UserRequestDTO dto) {
         if (userService.existsByEmail(dto.getEmail())) {
-            throw new EntityExistsException("User exists");
+            throw new EntityExistsException("User with this mail already exists! Try to login.");
         }
 
         String rawPassword = dto.getPassword();
@@ -52,10 +52,10 @@ public class AuthService {
         User user = principal.getUser();
 
         String token = jwtService.generateJwt(user);
-        AuthResponse response = new AuthResponse();
-        response.setToken(token);
-        response.setUser(userMapper.toResponseDto(user));
-        return response;
+        return AuthResponse.builder()
+                            .token(token)
+                            .user(userMapper.toResponseDto(user))
+                            .build();
     }
     
     public AuthResponse login(UserRequestDTO dto) {
@@ -69,9 +69,9 @@ public class AuthService {
         User user = principal.getUser();
 
         String token = jwtService.generateJwt(user);
-        AuthResponse response = new AuthResponse();
-        response.setToken(token);
-        response.setUser(userMapper.toResponseDto(user));
-        return response;
+        return AuthResponse.builder()
+                            .token(token)
+                            .user(userMapper.toResponseDto(user))
+                            .build();
     }
 }

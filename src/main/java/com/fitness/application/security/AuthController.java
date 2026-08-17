@@ -42,7 +42,7 @@ public class AuthController {
 
     @GetMapping("/whoami")
     public ResponseEntity<UserResponseDTO> whoami(@CurrentUser User user) {
-        log.info("GET /api/auth/whoami - Fetching current user info");
+        log.debug("GET /api/auth/whoami - Fetching current user info");
         return ResponseEntity.ok(userMapper.toResponseDto(userService.getUserOrThrowNotFound(user)));
     }
 
