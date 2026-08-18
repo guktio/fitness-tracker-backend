@@ -19,5 +19,4 @@ public class ExerciseMuscleDTO {
     private Set<MuscleImpactDTO> primaryMuscles;
     private Set<MuscleImpactDTO> secondaryMuscles;
     private Set<MuscleImpactDTO> stabilizingMuscles;
-
 }

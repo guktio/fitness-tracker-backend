@@ -17,5 +17,4 @@ public class CreateExerciseDTO {
     private String name;
     private String description;
     private ExerciseMuscleDTO muscles;
-    
 }

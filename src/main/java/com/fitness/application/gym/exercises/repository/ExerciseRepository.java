@@ -36,7 +36,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
         SELECT e FROM Exercise e
         JOIN e.exerciseMuscles.primaryMuscles as pm
         WHERE (:muscle IS NULL OR pm.muscle  = :muscle)
-        AND (:createdBy IS NULL or e.createdBy = :createdBy)
+        AND (:createdBy IS NULL or e.createdBy.uuid = :createdBy)
     """)
     Page<Exercise> findByFilter(Muscle muscle, UUID createdBy, Pageable pageable);
 }
