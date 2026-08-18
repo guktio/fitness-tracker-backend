@@ -74,8 +74,12 @@ public class ExerciseService {
         exerciseRepository.deleteById(id);
     }
 
-    public PageDTO<ExerciseDTO> getExerciseByFilter(String muscle, Pageable pageable, UUID uuid){
-        Page<Exercise> page = exerciseRepository.findByFilter(Muscle.valueOf(muscle), uuid,pageable);
+    public PageDTO<ExerciseDTO> getExerciseByFilter(String muscleName, Pageable pageable, UUID uuid){
+        Muscle muscle = null;
+        if (muscleName != null) {
+            muscle = Muscle.valueOf(muscleName);
+        }
+        Page<Exercise> page = exerciseRepository.findByFilter(muscle, uuid,pageable);
         return new PageDTO<ExerciseDTO>(
             page.getContent().stream().map(exerciseMapper::toDTO).toList(), 
             page.getPageable().getPageNumber(), 
