@@ -23,15 +23,15 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ExerciseMuscle {
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "exercise_primary_muscles", joinColumns = @JoinColumn(name = "exercise_id"))
     private Set<MuscleImpact> primaryMuscles;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "exercise_secondary_muscles", joinColumns = @JoinColumn(name = "exercise_id"))
     private Set<MuscleImpact> secondaryMuscles;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "exercise_stabilizing_muscles", joinColumns = @JoinColumn(name = "exercise_id"))
     private Set<MuscleImpact> stabilizingMuscles;
 

@@ -33,7 +33,7 @@ public class Exercise {
     private String description;
 
     @Embedded
-    private ExerciseMuscle exerciseMuscles; 
+    private ExerciseMuscle exerciseMuscles;
 
     @ManyToOne
     @JoinColumn(name = "created_by_user_id")

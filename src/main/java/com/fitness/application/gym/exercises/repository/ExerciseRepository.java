@@ -6,9 +6,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.fitness.application.gym.exercises.entity.Exercise;
+import com.fitness.application.gym.exercises.entity.Muscle;
 
 @Repository
 public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
@@ -19,7 +21,6 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
 
     Page<Exercise> findAll(Pageable pageable);
 
-
     @EntityGraph(attributePaths = {
         "createdBy",
         "exerciseMuscles",
@@ -29,4 +30,11 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
         "exerciseMuscles.stabilizingMuscles"
     })
     Optional<Exercise> findById(Long id);
+
+    @Query("""
+        SELECT e FROM Exercise e
+        JOIN e.exerciseMuscles.primaryMuscles as pm
+        WHERE pm.muscle  = :muscle
+    """)
+    Page<Exercise> findByMuscle(Muscle muscle, Pageable pageable);
 }

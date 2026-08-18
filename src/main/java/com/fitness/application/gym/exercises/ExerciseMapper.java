@@ -18,6 +18,7 @@ import com.fitness.application.gym.exercises.DTO.CreateExerciseDTO;
 import com.fitness.application.gym.exercises.DTO.ExerciseDTO;
 import com.fitness.application.gym.exercises.DTO.ExerciseMuscleDTO;
 import com.fitness.application.gym.exercises.DTO.MuscleImpactDTO;
+import com.fitness.application.gym.exercises.DTO.muscles.MuscleDTO;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.exercises.entity.ExerciseMuscle;
 import com.fitness.application.gym.exercises.entity.ExerciseMuscle.MuscleImpact;
@@ -58,14 +59,14 @@ public class ExerciseMapper {
                     Muscle muscle = impact.getMuscle();
 
                     String localizedName = messageSource.getMessage(
-                            muscle.getCode(),
-                            null,
-                            muscle.name(),
-                            currentLocale
+                        muscle.getCode(), 
+                        null, 
+                        muscle.name(), 
+                        currentLocale
                     );
 
                     return MuscleImpactDTO.builder()
-                            .muscle(muscle.name())
+                            .code(muscle.name())
                             .name(localizedName)
                             .impactLevel(impact.getImpactPercentage())
                             .build();
@@ -98,17 +99,23 @@ public class ExerciseMapper {
         }
 
         return dtos.stream()
-                .filter(dto -> dto != null && dto.getMuscle() != null)
+                .filter(dto -> dto != null && dto.getCode() != null)
                 .map(dto -> {
                     return MuscleImpact.builder()
-                            .muscle(Muscle.valueOf(dto.getMuscle()))
+                            .muscle(Muscle.valueOf(dto.getCode()))
                             .impactPercentage(dto.getImpactLevel())
                             .build();
                 })
                 .collect(Collectors.toCollection(HashSet::new));
     }
 
-    public Map<Muscle.Category,List<Muscle>> getGroupedMuscles(Locale locale) {
-        return Arrays.stream(Muscle.values()).collect(Collectors.groupingBy(m -> m.getCategory()));   
+    public Map<Muscle.Category,List<MuscleDTO>> getGroupedMuscles() {
+        Locale currentLocale = LocaleContextHolder.getLocale();
+        return Arrays.stream(Muscle.values())
+                        .collect(Collectors.groupingBy(
+                            m -> m.getCategory(),
+                            Collectors.mapping(m -> (
+                                MuscleDTO.builder().code(m.name()).name(messageSource.getMessage(m.getCode(), null,m.name(), currentLocale)).build())
+                                , Collectors.toList())));   
     }
 }

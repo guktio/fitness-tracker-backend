@@ -59,7 +59,7 @@ public class ExerciseInitializerService {
 
     private MuscleImpactDTO impact(Muscle muscle, Integer level) {
         return MuscleImpactDTO.builder()
-                .muscle(muscle.name())
+                .code(muscle.name())
                 .impactLevel(level)
                 .build();
     }

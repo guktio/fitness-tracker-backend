@@ -1,7 +1,6 @@
 package com.fitness.application.gym.exercises;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fitness.application.base.DTO.PageDTO;
 import com.fitness.application.gym.exercises.DTO.CreateExerciseDTO;
 import com.fitness.application.gym.exercises.DTO.ExerciseDTO;
+import com.fitness.application.gym.exercises.DTO.muscles.MuscleDTO;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.gym.exercises.repository.ExerciseRepository;
@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 @Slf4j
 public class ExerciseService {
 
@@ -40,8 +39,8 @@ public class ExerciseService {
     }
 
     @Transactional(readOnly = true)
-    public ExerciseDTO getExerciseById(Long id, Locale locale) {
-        log.debug("getExerciseById with id: {} & Locale: {}", id, locale);
+    public ExerciseDTO getExerciseById(Long id) {
+        log.debug("getExerciseById with id: {} & Locale: {}", id);
         return exerciseMapper.toDTO(
             exerciseRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Exercise not found"))
@@ -64,13 +63,22 @@ public class ExerciseService {
         );
     }
 
-    public Map<Muscle.Category,List<Muscle>> getGroupedMuscles(Locale locale) {
-        log.debug("getGroupedMuscles wiht Locale: {}", locale);
-        return exerciseMapper.getGroupedMuscles(locale);
+    public Map<Muscle.Category,List<MuscleDTO>> getGroupedMuscles() {
+        log.debug("getGroupedMuscles");
+        return exerciseMapper.getGroupedMuscles();
     }
 
     public void deleteExercise(Long id) {
         log.debug("deleteExercise with id: {}", id);
         exerciseRepository.deleteById(id);
+    }
+
+    public PageDTO<ExerciseDTO> getExerciseByMuscle(String muscle, Pageable pageable){
+        Page<Exercise> page = exerciseRepository.findByMuscle(Muscle.valueOf(muscle),pageable);
+        return new PageDTO<ExerciseDTO>(
+            page.getContent().stream().map(exerciseMapper::toDTO).toList(), 
+            page.getPageable().getPageNumber(), 
+            page.getTotalPages()
+        );
     }
 }

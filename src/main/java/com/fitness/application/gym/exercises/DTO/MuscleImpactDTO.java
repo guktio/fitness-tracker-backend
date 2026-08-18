@@ -14,7 +14,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MuscleImpactDTO {
-    private String muscle;
+    private String code;
     private String name;
     private Integer impactLevel;
 }
