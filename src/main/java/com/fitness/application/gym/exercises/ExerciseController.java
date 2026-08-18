@@ -2,6 +2,7 @@ package com.fitness.application.gym.exercises;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,10 +52,11 @@ public class ExerciseController {
     @GetMapping("/exercise")
     public PageDTO<ExerciseDTO> getAllExercises(
         Pageable pageable,
-        @RequestParam String muscle
+        @RequestParam(required = false) String muscle,
+        @RequestParam(required = false) UUID createdBy
     ) {
         log.info("GET /api/gym/exercise - Fetching all exercises");
-        return exerciseService.getExerciseByMuscle(muscle,pageable);
+        return exerciseService.getExerciseByFilter(muscle, pageable, createdBy);
     }
 
     @DeleteMapping("/exercise/{id}")

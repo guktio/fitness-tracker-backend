@@ -2,6 +2,7 @@ package com.fitness.application.gym.exercises;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,8 +74,8 @@ public class ExerciseService {
         exerciseRepository.deleteById(id);
     }
 
-    public PageDTO<ExerciseDTO> getExerciseByMuscle(String muscle, Pageable pageable){
-        Page<Exercise> page = exerciseRepository.findByMuscle(Muscle.valueOf(muscle),pageable);
+    public PageDTO<ExerciseDTO> getExerciseByFilter(String muscle, Pageable pageable, UUID uuid){
+        Page<Exercise> page = exerciseRepository.findByFilter(Muscle.valueOf(muscle), uuid,pageable);
         return new PageDTO<ExerciseDTO>(
             page.getContent().stream().map(exerciseMapper::toDTO).toList(), 
             page.getPageable().getPageNumber(), 

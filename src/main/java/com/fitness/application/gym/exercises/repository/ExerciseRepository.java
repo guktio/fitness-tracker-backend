@@ -1,6 +1,7 @@
 package com.fitness.application.gym.exercises.repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +35,8 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
     @Query("""
         SELECT e FROM Exercise e
         JOIN e.exerciseMuscles.primaryMuscles as pm
-        WHERE pm.muscle  = :muscle
+        WHERE (:muscle IS NULL OR pm.muscle  = :muscle)
+        AND (:createdBy IS NULL or e.createdBy = :createdBy)
     """)
-    Page<Exercise> findByMuscle(Muscle muscle, Pageable pageable);
+    Page<Exercise> findByFilter(Muscle muscle, UUID createdBy, Pageable pageable);
 }
