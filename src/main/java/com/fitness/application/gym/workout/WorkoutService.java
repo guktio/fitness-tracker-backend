@@ -124,7 +124,7 @@ public class WorkoutService {
     }
 
     public SliceDTO<WorkoutDTO> getWorkoutSlice(UUID uuid, Pageable pageable){
-        Slice<Workout> workout = workoutRepository.findAllByCreatedBy(uuid, pageable);
+        Slice<Workout> workout = workoutRepository.findAllByCreatedByUuid(uuid, pageable);
         return new SliceDTO<WorkoutDTO>(
             workout.getContent()
                 .stream()

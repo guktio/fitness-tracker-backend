@@ -34,11 +34,11 @@ public class UserService implements UserDetailsService{
     }
 
     public boolean checkUsername(String username){
-        return userRepository.existsByUsername(username);
+        return !userRepository.existsByUsername(username);
     }
 
     public boolean checkEmail(String email){
-        return userRepository.existsByEmail(email);
+        return !userRepository.existsByEmail(email);
     }
 
     public UserResponseDTO update(UserRequestDTO newUser, UUID uuid) {
