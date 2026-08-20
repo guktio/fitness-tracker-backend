@@ -43,6 +43,7 @@ public class WorkoutService {
 
     private final WorkoutMapper workoutMapper;
 
+    @Transactional
     public WorkoutDTO startWorkout(User user) {
         Workout workout = Workout.builder()
                                 .status(Workout.Status.IN_PROGRESS)
@@ -52,8 +53,12 @@ public class WorkoutService {
         return workoutMapper.toSimpleWorkoutDTO(saved);
     }
 
-    public WorkoutDTO completeWorkout(Long workoutId) {
+    @Transactional
+    public WorkoutDTO completeWorkout(Long workoutId, User user) {
         Workout workout = getWorkoutOrThrow(workoutId);
+        if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
+            throw new RuntimeException("Cannot stop workout: workout belongs to another user.");
+        }
         workout.setStatus(Workout.Status.COMPLETED);
         Workout saved = workoutRepository.save(workout);
         return workoutMapper.toSimpleWorkoutDTO(saved);
@@ -62,6 +67,10 @@ public class WorkoutService {
     @Transactional
     public WorkoutExerciseDTO addExerciseToWorkout(Long wId, Long exId, ExerciseAddDTO dto, User user) {
         Workout workout = getWorkoutOrThrow(wId);
+        if (!isAuthor(workout.getCreatedBy().getUuid(),user)) {
+            throw new RuntimeException("Cannot add exercise: workout belongs to another user.");
+        }
+        
         Exercise exercise = exerciseService.getExerciseEntityById(exId);
         WorkoutExercise workoutExercise = WorkoutExercise.builder()
                             .orderNum(dto.orderNum())
@@ -75,10 +84,11 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutSetDTO addSetToWorkoutExercise(Long workoutExerciseId, WorkoutSet dto, User user) {
-        WorkoutExercise workoutExercise = workoutExerciseRepository.findById(workoutExerciseId)
-            .orElseThrow(() -> new RuntimeException("WorkoutExercise not found"));
-        
+    public WorkoutSetDTO addSetToWorkoutExercise(Long weId, WorkoutSet dto, User user) {
+        WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
+        if (!isAuthor(workoutExercise.getCreatedBy().getUuid(),user)) {
+            throw new RuntimeException("Cannot add set: workout belongs to another user.");
+        }
         WorkoutSet set = WorkoutSet.builder()
                                 .workoutExercise(workoutExercise)
                                 .weight(dto.getWeight())
@@ -93,8 +103,11 @@ public class WorkoutService {
     }
 
     @Transactional
-    public void deleteExerciseFromWorkout(Long wId, Long exId){
+    public void deleteExerciseFromWorkout(Long wId, Long exId, User user){
         Workout workout = getWorkoutOrThrow(wId);
+        if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
+            throw new RuntimeException("Cannot : workout belongs to another user.");
+        }
         WorkoutExercise workoutExercise = workoutExerciseRepository.findByWorkoutIdAndExerciseId(wId, exId)
                 .orElseThrow(() -> new EntityNotFoundException("Exercise with id:" + exId + " and workoutId:" + wId+ " not found"));
         workout.removeExercise(workoutExercise);
@@ -102,9 +115,8 @@ public class WorkoutService {
     }
 
     @Transactional
-    public void deleteSetFromExercise(Long weId, Long sId){
-        WorkoutExercise workoutExercise = workoutExerciseRepository.findById(weId)
-                .orElseThrow(() -> new EntityNotFoundException("WorkoutExercise with id:" + weId + " not found"));
+    public void deleteSetFromExercise(Long weId, Long sId, User user){
+        WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         WorkoutSet set = setRepository.findById(sId)
                 .orElseThrow(() -> new EntityNotFoundException("Set with id:" + sId + " not found"));
         workoutExercise.removeSet(set);
@@ -124,13 +136,21 @@ public class WorkoutService {
     }
 
     public WorkoutInfo getWorkoutInfo(Long wId){
-        Workout workout = workoutRepository.findById(wId)
-            .orElseThrow(() -> new IllegalArgumentException("Workout not found: " + wId));
+        Workout workout = getWorkoutOrThrow(wId);
         return workoutMapper.toWorkoutInfo(workout);
     }
 
-    private Workout getWorkoutOrThrow(Long workoutId) {
-        return workoutRepository.findWorkoutById(workoutId)
+    private Workout getWorkoutOrThrow(Long wId) {
+        return workoutRepository.findWorkoutById(wId)
             .orElseThrow(() -> new RuntimeException("Workout not found"));
+    }
+
+    private WorkoutExercise getWorkoutExerciseByIdOrThrow(Long weId){
+        return workoutExerciseRepository.findById(weId)
+                .orElseThrow(() -> new EntityNotFoundException("WorkoutExercise with id:" + weId + " not found"));
+    }
+
+    private boolean isAuthor(UUID entityAuthorUuid, User currentUserUuid){
+        return entityAuthorUuid.equals(currentUserUuid.getUuid());
     }
 }

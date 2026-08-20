@@ -39,7 +39,9 @@ public class WorkoutController {
     private final UserService userService;
 
     @PostMapping("/workout/start")
-    public ResponseEntity<WorkoutDTO> startWorkout(@CurrentUser User user) {
+    public ResponseEntity<WorkoutDTO> startWorkout(
+        @CurrentUser User user
+    ) {
         userService.getUserOrThrowNotFound(user);
         log.info("POST /workout/start with Authentication: {}", user.toString());
         WorkoutDTO workout = workoutService.startWorkout(user);
@@ -47,20 +49,25 @@ public class WorkoutController {
     }
 
     @PostMapping("/workout/{id}/complete")
-    public ResponseEntity<WorkoutDTO> stopWorkout(@PathVariable Long id) {
+    public ResponseEntity<WorkoutDTO> stopWorkout(
+        @PathVariable Long id, 
+        @CurrentUser User user
+    ) {
         log.info("POST /workout/{}/complete", id);
-        WorkoutDTO workout = workoutService.completeWorkout(id);
+        WorkoutDTO workout = workoutService.completeWorkout(id, user);
         return ResponseEntity.ok(workout);
     }
 
     @GetMapping("/workout/{id}")
-    public ResponseEntity<WorkoutInfo> getWorkoutInfo(@PathVariable Long id) {
+    public ResponseEntity<WorkoutInfo> getWorkoutInfo(
+        @PathVariable Long id
+    ) {
         log.info("GET /workout/{}", id);
         WorkoutInfo body = workoutService.getWorkoutInfo(id);
         return ResponseEntity.ok(body);
     }
 
-    @PostMapping("/workout/{workoutId}/exercise{exerciseId}")
+    @PostMapping("/workout/{workoutId}/exercise/{exerciseId}")
     public ResponseEntity<WorkoutExerciseDTO> addExerciseToWorkoutDTO(
         @PathVariable Long workoutId,
         @PathVariable Long exerciseId,
@@ -93,7 +100,7 @@ public class WorkoutController {
     ) {
         userService.getUserOrThrowNotFound(user);
         log.info("DELETE /workout/exercise/{}/set/{} & Authentication: {}" , workoutExerciseId, setId, user.toString());
-        workoutService.deleteSetFromExercise(workoutExerciseId, setId);
+        workoutService.deleteSetFromExercise(workoutExerciseId, setId, user);
         return ResponseEntity.noContent().build();
     }
 
@@ -108,8 +115,12 @@ public class WorkoutController {
     }
 
     @DeleteMapping("/workout/{wId}/exercise/{exId}")
-    public ResponseEntity<Void> deleteExerciseFromWorkout(@PathVariable Long wId, @PathVariable Long exId) {
-        workoutService.deleteExerciseFromWorkout(wId, exId);
+    public ResponseEntity<Void> deleteExerciseFromWorkout(
+        @PathVariable Long wId, 
+        @PathVariable Long exId, 
+        @CurrentUser User user
+    ) {
+        workoutService.deleteExerciseFromWorkout(wId, exId,user);
         log.info("DELETE /workout/{}/exercise/{}", wId, exId);
         return ResponseEntity.noContent().build();
     }

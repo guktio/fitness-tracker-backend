@@ -27,7 +27,6 @@ public class WorkoutMapper {
     }
 
     public WorkoutInfo toWorkoutInfo(Workout workout) {
-
         List<WorkoutExerciseDTO> exerciseDTOs = workout.getExercises().stream()
                 .map(we -> toExerciseDTO(we))
                 .collect(Collectors.toList());
