@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
-import com.fitness.application.gym.workout.DTO.SimpleWorkoutDTO;
+import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.SliceDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
@@ -82,7 +82,7 @@ public class WorkoutController {
     }
 
     @GetMapping("/user/workout/{uuid}")
-    public SliceDTO<SimpleWorkoutDTO> getWorkoutByUser(
+    public SliceDTO<WorkoutDTO> getWorkoutByUser(
         @PathVariable UUID uuid,
         @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {

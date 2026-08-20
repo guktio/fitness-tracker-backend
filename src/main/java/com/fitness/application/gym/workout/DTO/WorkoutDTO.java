@@ -1,21 +1,16 @@
 package com.fitness.application.gym.workout.DTO;
 
-import java.util.List;
-
 import com.fitness.application.gym.workout.entity.Workout.Status;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
-@Builder
 @Getter
-public class WorkoutInfo {
-
+@Setter
+public class WorkoutDTO {
     private Long id;
     
     private Status status;
     
-    private List<WorkoutExerciseDTO> exerciseDTO;
-
     private String createdAt;
 }

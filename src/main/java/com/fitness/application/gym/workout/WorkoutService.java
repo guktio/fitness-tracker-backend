@@ -1,18 +1,16 @@
 package com.fitness.application.gym.workout;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
-import com.fitness.application.gym.workout.DTO.SimpleWorkoutDTO;
+import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.SliceDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
@@ -22,21 +20,21 @@ import com.fitness.application.gym.workout.entity.WorkoutExercise;
 import com.fitness.application.gym.workout.entity.WorkoutSet;
 import com.fitness.application.gym.workout.repository.WorkoutExerciseRepository;
 import com.fitness.application.gym.workout.repository.WorkoutRepository;
-import com.fitness.application.gym.workout.repository.WorkoutSetRepository;
 import com.fitness.application.users.entity.User;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class WorkoutService {
 
     private final WorkoutRepository workoutRepository;
 
     private final WorkoutExerciseRepository workoutExerciseRepository;
-    private final WorkoutSetRepository workoutSetRepository;
 
     private final ExerciseService exerciseService;
 
@@ -61,21 +59,24 @@ public class WorkoutService {
             .orElseThrow(() -> new RuntimeException("Workout not found"));
     }
 
+    @Transactional
     public WorkoutExerciseDTO addExerciseToWorkout(Long id, ExerciseAddDTO dto, User user) {
         Workout workout = getWorkoutOrThrow(id);
         Exercise exercise = exerciseService.getExerciseEntityById(dto.exerciseId());
         WorkoutExercise workoutExercise = WorkoutExercise.builder()
-                                        .orderNum(dto.orderNum())
-                                        .workout(workout)
-                                        .exercise(exercise)
-                                        .createdBy(user)
-                                        .build();
-        return workoutMapper.toExerciseDTO(workoutExerciseRepository.save(workoutExercise), null);
+                            .orderNum(dto.orderNum())
+                            .workout(workout)
+                            .exercise(exercise)
+                            .createdBy(user)
+                            .build();
+        workout.addExercise(workoutExercise);
+        workoutRepository.saveAndFlush(workout);
+        return workoutMapper.toExerciseDTO(workoutExercise);
     }
 
-    public SliceDTO<SimpleWorkoutDTO> getWorkoutSlice(UUID uuid, Pageable pageable){
+    public SliceDTO<WorkoutDTO> getWorkoutSlice(UUID uuid, Pageable pageable){
         Slice<Workout> workout = workoutRepository.findAllByCreatedBy(uuid, pageable);
-        return new SliceDTO<SimpleWorkoutDTO>(
+        return new SliceDTO<WorkoutDTO>(
             workout.getContent()
                 .stream()
                     .map(workoutMapper::toSimpleWorkoutDTO)
@@ -85,50 +86,17 @@ public class WorkoutService {
         );
     }
 
-    public WorkoutInfo getWorkoutInfo(Long workoutId) {
-        Workout workout = workoutRepository.findById(workoutId)
-                .orElseThrow(() -> new IllegalArgumentException("Workout not found: " + workoutId));
-
-        log.info("Fetching info for workout ID: {} [Status: {}]", workoutId, workout.getStatus());
-
-        List<WorkoutExercise> exercises =
-                workoutExerciseRepository.findByWorkoutIdOrderByOrderNumAsc(workoutId);
-
-        List<String> exerciseNames = exercises.stream()
-                .map(e -> e.getExercise().getName())
-                .toList();
-
-        List<Long> exerciseIds = exercises.stream()
-                .map(e -> e.getId())
-                .toList();
-
-        log.info("Found {} exercises: {} (IDs: {})", exercises.size(), exerciseNames, exerciseIds);
-
-        List<WorkoutSet> allSets = exerciseIds.isEmpty()
-                ? List.of()
-                : workoutSetRepository.findByWorkoutExerciseIdInOrderBySetNumberAsc(exerciseIds);
-
-        Map<Long, List<WorkoutSet>> setsByExerciseId = allSets.stream()
-                .collect(Collectors.groupingBy(s -> s.getWorkoutExercise().getId()));
-
-        if (allSets.isEmpty()) {
-            log.info("No sets found for this workout.");
-        } else {
-            String setsSummary = setsByExerciseId.entrySet().stream()
-                    .map(e -> "Exercise ID " + e.getKey() + " -> " + e.getValue().size() + " sets")
-                    .collect(Collectors.joining(", "));
-            
-            log.info("Total sets: {}. Summary: [{}]", allSets.size(), setsSummary);
-        }
-
-        return workoutMapper.toWorkoutInfo(workout, exercises, setsByExerciseId);
+    public WorkoutInfo getWorkoutInfo(Long wId){
+        Workout workout = workoutRepository.findById(wId)
+            .orElseThrow(() -> new IllegalArgumentException("Workout not found: " + wId));
+        return workoutMapper.toWorkoutInfo(workout);
     }
 
-
+    @Transactional
     public WorkoutSetDTO addSetToWorkoutExercise(Long workoutExerciseId, WorkoutSet dto, User user) {
         WorkoutExercise workoutExercise = workoutExerciseRepository.findById(workoutExerciseId)
             .orElseThrow(() -> new RuntimeException("WorkoutExercise not found"));
-
+        
         WorkoutSet set = WorkoutSet.builder()
                                 .workoutExercise(workoutExercise)
                                 .weight(dto.getWeight())
@@ -137,6 +105,14 @@ public class WorkoutService {
                                 .rpe(dto.getRpe())
                                 .createdBy(user)
                                 .build();
-        return workoutMapper.toSetDTO(workoutSetRepository.save(set));
+        workoutExercise.addSet(set);
+        workoutExerciseRepository.saveAndFlush(workoutExercise);
+        return workoutMapper.toSetDTO(set);
+    }
+
+    public void deleteExerciseFromWorkout(Long wId, Long exId){
+        WorkoutExercise workoutExercise = workoutExerciseRepository.findByWorkoutIdAndExerciseId(wId,exId)
+                .orElseThrow(() -> new EntityNotFoundException("Exercise with id:" + exId + " and workoutId:" + wId+ " not found"));
+        workoutExerciseRepository.delete(workoutExercise);
     }
 }

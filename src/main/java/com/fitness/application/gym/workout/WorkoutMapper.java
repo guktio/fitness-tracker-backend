@@ -1,16 +1,16 @@
 package com.fitness.application.gym.workout;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.fitness.application.gym.workout.DTO.SimpleWorkoutDTO;
+import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
 import com.fitness.application.gym.workout.DTO.WorkoutSetDTO;
@@ -21,52 +21,23 @@ import com.fitness.application.gym.workout.entity.WorkoutSet;
 @Component
 public class WorkoutMapper {
 
-    public SimpleWorkoutDTO toSimpleWorkoutDTO (Workout workout){
-        LocalDateTime createdAt = workout.getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        SimpleWorkoutDTO dto = new SimpleWorkoutDTO();
-        dto.setCreatedAt(DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy").format(createdAt));
-        dto.setStatus(workout.getStatus());
-        dto.setId(workout.getId());
-        return dto;
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy");
+
+    private String prettyTime(Instant time){
+        return DATE_TIME_FORMATTER.format(time.atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
 
-    public WorkoutInfo toWorkoutInfo(Workout workout,
-                                      List<WorkoutExercise> exercises,
-                                      Map<Long, List<WorkoutSet>> setsByExerciseId) {
+    public WorkoutInfo toWorkoutInfo(Workout workout) {
 
-        List<WorkoutExerciseDTO> exerciseDTOs = exercises.stream()
-                .map(we -> toExerciseDTO(we, setsByExerciseId.getOrDefault(we.getId(), List.of())))
-                .toList();
+        List<WorkoutExerciseDTO> exerciseDTOs = workout.getExercises().stream()
+                .map(we -> toExerciseDTO(we))
+                .collect(Collectors.toList());
 
-        LocalDateTime createdAt = workout.getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDateTime();
         return WorkoutInfo.builder()
-                .workout(workout)
-                .createdAt(DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy").format(createdAt))
+                .id(workout.getId())
+                .status(workout.getStatus())
+                .createdAt(prettyTime(workout.getCreatedAt()))
                 .exerciseDTO(exerciseDTOs)
-                .build();
-    }
-
-    public WorkoutExerciseDTO toExerciseDTO(WorkoutExercise we, List<WorkoutSet> sets) {
-        if (we == null) {
-            return null;
-        }
-
-        List<WorkoutSetDTO> setDTOs = Optional.ofNullable(sets)
-                .orElseGet(Collections::emptyList)
-                .stream()
-                .filter(s -> s != null)
-                .map(this::toSetDTO)
-                .toList();
-
-        String exerciseName = Optional.ofNullable(we.getExercise())
-                .map(e -> e.getName())
-                .orElse(null);
-
-        return WorkoutExerciseDTO.builder()
-                .id(we.getId())
-                .orderNum(we.getOrderNum())
-                .exerciseName(exerciseName)
-                .setDTO(setDTOs)
                 .build();
     }
 
@@ -78,5 +49,32 @@ public class WorkoutMapper {
                 .reps(s.getReps())
                 .rpe(s.getRpe())
                 .build();
+    }
+
+    public WorkoutExerciseDTO toExerciseDTO(WorkoutExercise we){
+        List<WorkoutSetDTO> setDTOs = we.getSets().stream()
+                        .filter(s -> s != null)
+                        .map(s -> toSetDTO(s))
+                        .collect(Collectors.toList());
+
+        String exerciseName = Optional.ofNullable(we.getExercise())
+                .map(e -> e.getName())
+                .orElse(null);
+
+        return WorkoutExerciseDTO.builder()
+                .id(we.getId())
+                .orderNum(we.getOrderNum())
+                .exerciseName(exerciseName)
+                .setDTO(setDTOs)
+                .build();
+    } 
+
+    public WorkoutDTO toSimpleWorkoutDTO (Workout workout){
+        LocalDateTime createdAt = workout.getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        WorkoutDTO dto = new WorkoutDTO();
+        dto.setCreatedAt(DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy").format(createdAt));
+        dto.setStatus(workout.getStatus());
+        dto.setId(workout.getId());
+        return dto;
     }
 }
