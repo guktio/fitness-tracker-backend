@@ -5,6 +5,9 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,7 +59,7 @@ public class WorkoutController {
         return workoutService.getWorkoutInfo(id);
     }
 
-    @PostMapping("/workout/addExerciseToWorkout/{id}")
+    @PostMapping("/workout/exercise/{id}")
     public WorkoutExerciseDTO addExerciseToWorkoutDTO(
         @PathVariable Long id,
         @RequestBody ExerciseAddDTO exerciseAddDTO,
@@ -67,7 +70,7 @@ public class WorkoutController {
         return workoutService.addExerciseToWorkout(id, exerciseAddDTO, user);
     }
 
-    @PostMapping("/workout-exercise/{workoutExerciseId}/set")
+    @PostMapping("/workout/exercise/{workoutExerciseId}/set")
     public WorkoutSetDTO addSet(
             @PathVariable Long workoutExerciseId,
             @RequestBody WorkoutSet set,
@@ -78,7 +81,7 @@ public class WorkoutController {
         return workoutService.addSetToWorkoutExercise(workoutExerciseId, set, user);
     }
 
-    @GetMapping("/user-workout/{uuid}")
+    @GetMapping("/user/workout/{uuid}")
     public SliceDTO<SimpleWorkoutDTO> getWorkoutByUser(
         @PathVariable UUID uuid,
         @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
@@ -87,5 +90,9 @@ public class WorkoutController {
         return workoutService.getWorkoutSlice(uuid, pageable);
     }
 
-    
+    @DeleteMapping("/workout/{wId}/exercise/{exId}")
+    public ResponseEntity<HttpStatus> deleteExerciseFromWorkout(@PathVariable Long wId, @PathVariable Long exId){
+        workoutService.deleteExerciseFromWorkout(wId, exId);
+        return ResponseEntity.ok().build();
+    }
 }
