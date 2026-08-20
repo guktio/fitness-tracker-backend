@@ -60,9 +60,9 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutExerciseDTO addExerciseToWorkout(Long id, ExerciseAddDTO dto, User user) {
-        Workout workout = getWorkoutOrThrow(id);
-        Exercise exercise = exerciseService.getExerciseEntityById(dto.exerciseId());
+    public WorkoutExerciseDTO addExerciseToWorkout(Long wId, Long exId, ExerciseAddDTO dto, User user) {
+        Workout workout = getWorkoutOrThrow(wId);
+        Exercise exercise = exerciseService.getExerciseEntityById(exId);
         WorkoutExercise workoutExercise = WorkoutExercise.builder()
                             .orderNum(dto.orderNum())
                             .workout(workout)

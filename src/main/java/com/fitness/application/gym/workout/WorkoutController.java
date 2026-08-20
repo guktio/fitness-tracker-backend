@@ -60,15 +60,16 @@ public class WorkoutController {
         return ResponseEntity.ok(body);
     }
 
-    @PostMapping("/workout/{id}/exercise")
+    @PostMapping("/workout/{workoutId}/exercise{exerciseId}")
     public ResponseEntity<WorkoutExerciseDTO> addExerciseToWorkoutDTO(
-        @PathVariable Long id,
+        @PathVariable Long workoutId,
+        @PathVariable Long exerciseId,
         @RequestBody ExerciseAddDTO exerciseAddDTO,
         @CurrentUser User user
     ) {
         userService.getUserOrThrowNotFound(user);
-        log.info("POST /workout/exercise/{} with DTO: {} & Authentication: {}", id, exerciseAddDTO.toString(), user.toString());
-        WorkoutExerciseDTO body = workoutService.addExerciseToWorkout(id, exerciseAddDTO, user);
+        log.info("POST /workout/exercise/{} with DTO: {} & Authentication: {}", workoutId, exerciseAddDTO.toString(), user.toString());
+        WorkoutExerciseDTO body = workoutService.addExerciseToWorkout(workoutId, exerciseId,exerciseAddDTO, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
