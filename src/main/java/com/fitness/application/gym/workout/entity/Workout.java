@@ -47,13 +47,17 @@ public class Workout extends BaseEntity {
     private List<WorkoutExercise> exercises = new ArrayList<>();
 
     public void addExercise(WorkoutExercise exercise) {
-        exercises.add(exercise);
-        exercise.setWorkout(this);
+        if (exercise != null) {
+            exercises.add(exercise);
+            exercise.setWorkout(this);
+        }
     }
 
     public void removeExercise(WorkoutExercise exercise) {
-        exercises.remove(exercise);
-        exercise.setWorkout(null);
+        if (exercise != null) {
+            exercises.remove(exercise);
+            exercise.setWorkout(null);
+        }
     }
 }
     

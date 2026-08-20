@@ -13,6 +13,6 @@ public class WorkoutExerciseDTO {
     private Integer orderNum;
     private String exerciseName;
 
-    private List<WorkoutSetDTO> setDTO;
+    private List<WorkoutSetDTO> set;
         
 }

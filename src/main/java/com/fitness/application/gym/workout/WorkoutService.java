@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.SliceDTO;
+import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
 import com.fitness.application.gym.workout.DTO.WorkoutSetDTO;
@@ -20,6 +20,7 @@ import com.fitness.application.gym.workout.entity.WorkoutExercise;
 import com.fitness.application.gym.workout.entity.WorkoutSet;
 import com.fitness.application.gym.workout.repository.WorkoutExerciseRepository;
 import com.fitness.application.gym.workout.repository.WorkoutRepository;
+import com.fitness.application.gym.workout.repository.WorkoutSetRepository;
 import com.fitness.application.users.entity.User;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -36,27 +37,26 @@ public class WorkoutService {
 
     private final WorkoutExerciseRepository workoutExerciseRepository;
 
+    private final WorkoutSetRepository setRepository;
+
     private final ExerciseService exerciseService;
 
     private final WorkoutMapper workoutMapper;
 
-    public Workout startWorkout(User user) {
+    public WorkoutDTO startWorkout(User user) {
         Workout workout = Workout.builder()
                                 .status(Workout.Status.IN_PROGRESS)
                                 .createdBy(user)
                                 .build();
-        return workoutRepository.save(workout);
+        Workout saved = workoutRepository.save(workout);
+        return workoutMapper.toSimpleWorkoutDTO(saved);
     }
 
-    public Workout completeWorkout(Long workoutId) {
+    public WorkoutDTO completeWorkout(Long workoutId) {
         Workout workout = getWorkoutOrThrow(workoutId);
         workout.setStatus(Workout.Status.COMPLETED);
-        return workoutRepository.save(workout);
-    }
-
-    private Workout getWorkoutOrThrow(Long workoutId) {
-        return workoutRepository.findWorkoutById(workoutId)
-            .orElseThrow(() -> new RuntimeException("Workout not found"));
+        Workout saved = workoutRepository.save(workout);
+        return workoutMapper.toSimpleWorkoutDTO(saved);
     }
 
     @Transactional
@@ -70,8 +70,45 @@ public class WorkoutService {
                             .createdBy(user)
                             .build();
         workout.addExercise(workoutExercise);
+        WorkoutExercise saved = workoutExerciseRepository.saveAndFlush(workoutExercise);
+        return workoutMapper.toExerciseDTO(saved);
+    }
+
+    @Transactional
+    public WorkoutSetDTO addSetToWorkoutExercise(Long workoutExerciseId, WorkoutSet dto, User user) {
+        WorkoutExercise workoutExercise = workoutExerciseRepository.findById(workoutExerciseId)
+            .orElseThrow(() -> new RuntimeException("WorkoutExercise not found"));
+        
+        WorkoutSet set = WorkoutSet.builder()
+                                .workoutExercise(workoutExercise)
+                                .weight(dto.getWeight())
+                                .setNumber(dto.getSetNumber())
+                                .reps(dto.getReps())
+                                .rpe(dto.getRpe())
+                                .createdBy(user)
+                                .build();
+        workoutExercise.addSet(set);
+        WorkoutSet savedSet = setRepository.saveAndFlush(set);
+        return workoutMapper.toSetDTO(savedSet);
+    }
+
+    @Transactional
+    public void deleteExerciseFromWorkout(Long wId, Long exId){
+        Workout workout = getWorkoutOrThrow(wId);
+        WorkoutExercise workoutExercise = workoutExerciseRepository.findByWorkoutIdAndExerciseId(wId, exId)
+                .orElseThrow(() -> new EntityNotFoundException("Exercise with id:" + exId + " and workoutId:" + wId+ " not found"));
+        workout.removeExercise(workoutExercise);
         workoutRepository.saveAndFlush(workout);
-        return workoutMapper.toExerciseDTO(workoutExercise);
+    }
+
+    @Transactional
+    public void deleteSetFromExercise(Long weId, Long sId){
+        WorkoutExercise workoutExercise = workoutExerciseRepository.findById(weId)
+                .orElseThrow(() -> new EntityNotFoundException("WorkoutExercise with id:" + weId + " not found"));
+        WorkoutSet set = setRepository.findById(sId)
+                .orElseThrow(() -> new EntityNotFoundException("Set with id:" + sId + " not found"));
+        workoutExercise.removeSet(set);
+        workoutExerciseRepository.saveAndFlush(workoutExercise);
     }
 
     public SliceDTO<WorkoutDTO> getWorkoutSlice(UUID uuid, Pageable pageable){
@@ -92,27 +129,8 @@ public class WorkoutService {
         return workoutMapper.toWorkoutInfo(workout);
     }
 
-    @Transactional
-    public WorkoutSetDTO addSetToWorkoutExercise(Long workoutExerciseId, WorkoutSet dto, User user) {
-        WorkoutExercise workoutExercise = workoutExerciseRepository.findById(workoutExerciseId)
-            .orElseThrow(() -> new RuntimeException("WorkoutExercise not found"));
-        
-        WorkoutSet set = WorkoutSet.builder()
-                                .workoutExercise(workoutExercise)
-                                .weight(dto.getWeight())
-                                .setNumber(dto.getSetNumber())
-                                .reps(dto.getReps())
-                                .rpe(dto.getRpe())
-                                .createdBy(user)
-                                .build();
-        workoutExercise.addSet(set);
-        workoutExerciseRepository.saveAndFlush(workoutExercise);
-        return workoutMapper.toSetDTO(set);
-    }
-
-    public void deleteExerciseFromWorkout(Long wId, Long exId){
-        WorkoutExercise workoutExercise = workoutExerciseRepository.findByWorkoutIdAndExerciseId(wId,exId)
-                .orElseThrow(() -> new EntityNotFoundException("Exercise with id:" + exId + " and workoutId:" + wId+ " not found"));
-        workoutExerciseRepository.delete(workoutExercise);
+    private Workout getWorkoutOrThrow(Long workoutId) {
+        return workoutRepository.findWorkoutById(workoutId)
+            .orElseThrow(() -> new RuntimeException("Workout not found"));
     }
 }

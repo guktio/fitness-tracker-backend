@@ -21,7 +21,6 @@ import com.fitness.application.gym.workout.DTO.SliceDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
 import com.fitness.application.gym.workout.DTO.WorkoutSetDTO;
-import com.fitness.application.gym.workout.entity.Workout;
 import com.fitness.application.gym.workout.entity.WorkoutSet;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.UserService;
@@ -37,62 +36,80 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkoutController {
 
     private final WorkoutService workoutService;
-
     private final UserService userService;
 
     @PostMapping("/workout/start")
-    public Workout startWorkout(@CurrentUser User user) {
+    public ResponseEntity<WorkoutDTO> startWorkout(@CurrentUser User user) {
         userService.getUserOrThrowNotFound(user);
         log.info("POST /workout/start with Authentication: {}", user.toString());
-        return workoutService.startWorkout(user);
+        WorkoutDTO workout = workoutService.startWorkout(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(workout);
     }
 
-    @PostMapping("/workout/stop/{id}")
-    public Workout stopWorkout(@PathVariable Long id) {
-        log.info("POST /workout/stop/{}", id);
-        return workoutService.completeWorkout(id);
+    @PostMapping("/workout/{id}/complete")
+    public ResponseEntity<WorkoutDTO> stopWorkout(@PathVariable Long id) {
+        log.info("POST /workout/{}/complete", id);
+        WorkoutDTO workout = workoutService.completeWorkout(id);
+        return ResponseEntity.ok(workout);
     }
 
     @GetMapping("/workout/{id}")
-    public WorkoutInfo getWorkoutInfo(@PathVariable Long id) {
+    public ResponseEntity<WorkoutInfo> getWorkoutInfo(@PathVariable Long id) {
         log.info("GET /workout/{}", id);
-        return workoutService.getWorkoutInfo(id);
+        WorkoutInfo body = workoutService.getWorkoutInfo(id);
+        return ResponseEntity.ok(body);
     }
 
-    @PostMapping("/workout/exercise/{id}")
-    public WorkoutExerciseDTO addExerciseToWorkoutDTO(
+    @PostMapping("/workout/{id}/exercise")
+    public ResponseEntity<WorkoutExerciseDTO> addExerciseToWorkoutDTO(
         @PathVariable Long id,
         @RequestBody ExerciseAddDTO exerciseAddDTO,
         @CurrentUser User user
     ) {
         userService.getUserOrThrowNotFound(user);
-        log.info("POST /workout/addExerciseToWorkout/{} with DTO: {} & Authentication: {}", id, exerciseAddDTO.toString(), user.toString());
-        return workoutService.addExerciseToWorkout(id, exerciseAddDTO, user);
+        log.info("POST /workout/exercise/{} with DTO: {} & Authentication: {}", id, exerciseAddDTO.toString(), user.toString());
+        WorkoutExerciseDTO body = workoutService.addExerciseToWorkout(id, exerciseAddDTO, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @PostMapping("/workout/exercise/{workoutExerciseId}/set")
-    public WorkoutSetDTO addSet(
+    public ResponseEntity<WorkoutSetDTO> addSet(
             @PathVariable Long workoutExerciseId,
             @RequestBody WorkoutSet set,
             @CurrentUser User user
     ) {
         userService.getUserOrThrowNotFound(user);
-        log.info("POST /workout-exercise/{}/set with DTO: {} & Authentication: {}" , workoutExerciseId, set.toString(), user.toString());
-        return workoutService.addSetToWorkoutExercise(workoutExerciseId, set, user);
+        log.info("POST /workout/exercise/{}/set with DTO: {} & Authentication: {}" , workoutExerciseId, set.toString(), user.toString());
+        WorkoutSetDTO response = workoutService.addSetToWorkoutExercise(workoutExerciseId, set, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/workout/exercise/{workoutExerciseId}/set/{setId}")
+    public ResponseEntity<Void> removeSet(
+            @PathVariable Long workoutExerciseId,
+            @PathVariable Long setId,
+            @CurrentUser User user
+    ) {
+        userService.getUserOrThrowNotFound(user);
+        log.info("DELETE /workout/exercise/{}/set/{} & Authentication: {}" , workoutExerciseId, setId, user.toString());
+        workoutService.deleteSetFromExercise(workoutExerciseId, setId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/user/workout/{uuid}")
-    public SliceDTO<WorkoutDTO> getWorkoutByUser(
+    public ResponseEntity<SliceDTO<WorkoutDTO>> getWorkoutByUser(
         @PathVariable UUID uuid,
         @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        log.info("GET /user-workout/{} with {}", uuid , pageable.toString());
-        return workoutService.getWorkoutSlice(uuid, pageable);
+        log.info("GET /user/workout/{} with {}", uuid , pageable.toString());
+        SliceDTO<WorkoutDTO> slice = workoutService.getWorkoutSlice(uuid, pageable);
+        return ResponseEntity.ok(slice);
     }
 
     @DeleteMapping("/workout/{wId}/exercise/{exId}")
-    public ResponseEntity<HttpStatus> deleteExerciseFromWorkout(@PathVariable Long wId, @PathVariable Long exId){
+    public ResponseEntity<Void> deleteExerciseFromWorkout(@PathVariable Long wId, @PathVariable Long exId) {
         workoutService.deleteExerciseFromWorkout(wId, exId);
-        return ResponseEntity.ok().build();
+        log.info("DELETE /workout/{}/exercise/{}", wId, exId);
+        return ResponseEntity.noContent().build();
     }
 }

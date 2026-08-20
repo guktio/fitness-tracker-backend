@@ -48,12 +48,16 @@ public class WorkoutExercise {
     private List<WorkoutSet> sets = new ArrayList<>();
 
     public void addSet(WorkoutSet set){
-        sets.add(set);
-        set.setWorkoutExercise(this);
+        if (set != null) {
+            sets.add(set);
+            set.setWorkoutExercise(this);
+        }
     }
 
     public void removeSet(WorkoutSet set) {
-        sets.remove(set);
-        set.setWorkoutExercise(null);
+        if (set != null) {
+            sets.remove(set);
+            set.setWorkoutExercise(null);
+        }  
     }
 }

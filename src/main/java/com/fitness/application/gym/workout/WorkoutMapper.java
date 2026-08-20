@@ -1,7 +1,6 @@
 package com.fitness.application.gym.workout;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -65,14 +64,13 @@ public class WorkoutMapper {
                 .id(we.getId())
                 .orderNum(we.getOrderNum())
                 .exerciseName(exerciseName)
-                .setDTO(setDTOs)
+                .set(setDTOs)
                 .build();
     } 
 
-    public WorkoutDTO toSimpleWorkoutDTO (Workout workout){
-        LocalDateTime createdAt = workout.getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    public WorkoutDTO toSimpleWorkoutDTO(Workout workout){
         WorkoutDTO dto = new WorkoutDTO();
-        dto.setCreatedAt(DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy").format(createdAt));
+        dto.setCreatedAt(prettyTime(workout.getCreatedAt()));
         dto.setStatus(workout.getStatus());
         dto.setId(workout.getId());
         return dto;
