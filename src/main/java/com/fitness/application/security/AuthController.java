@@ -42,13 +42,13 @@ public class AuthController {
 
     @GetMapping("/whoami")
     public ResponseEntity<UserResponseDTO> whoami(@CurrentUser User user) {
-        log.debug("GET /api/auth/whoami - Fetching current user info");
+        log.info("GET /api/auth/whoami - Fetching current user info");
         return ResponseEntity.ok(userMapper.toResponseDto(userService.getUserOrThrowNotFound(user)));
     }
 
     @GetMapping("/isAlive")
     public ResponseEntity<String> isAlive() {
-        log.info("GET /api/auth/isAlive - Checking if server is alive");
+        log.debug("GET /api/auth/isAlive - Checking if server is alive");
         return ResponseEntity.ok("Server is alive");
     }
 }
