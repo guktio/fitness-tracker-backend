@@ -80,9 +80,7 @@ public class SecurityConfig {
             "http://127.0.0.1:*",
             "https://*.vercel.app",
             "https://*.netlify.app",
-            "https://*.onrender.com",
-            "http://192.168.0.233:5173/",
-            "http://100.115.238.24:5173/"
+            "https://*.onrender.com"        
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
