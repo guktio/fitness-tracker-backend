@@ -41,9 +41,6 @@ public class GlobalExceptionHandler {
 
         errors.put("error", ex.getClass().getSimpleName());
         errors.put("message", "Entity already exists");
-        // ex.getBindingResult().getFieldErrors().forEach(error -> {
-        //     errors.put(error.getField(), error.getDefaultMessage());
-        // });
         
         return ResponseEntity.badRequest().body(errors);
     }
