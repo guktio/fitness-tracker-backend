@@ -1,3 +1,6 @@
+![Website](https://img.shields.io/website?url=https%3A%2F%2Ffitness-tracker-backend-yrfj.onrender.com%2Fapi%2Fauth%2FisAlive&up_message=UP!&up_color=green&down_message=DOWN&down_color=red&style=flat&label=Service)
+
+
 # Gym tracker
 
 - [Features](#toc-features)
