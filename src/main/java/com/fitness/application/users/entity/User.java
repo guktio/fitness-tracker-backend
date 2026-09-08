@@ -3,6 +3,9 @@ package com.fitness.application.users.entity;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import com.fitness.application.base.BaseEntity;
 
 import jakarta.persistence.CollectionTable;
@@ -36,6 +39,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET deleted=true WHERE uuid = ?")
+@SQLRestriction("deleted = false")
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -55,6 +60,9 @@ public class User extends BaseEntity {
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     private Set<Roles> roles;
+
+    @Builder.Default
+    private boolean deleted = false;
 
     @PrePersist
     protected void onCreate() {
