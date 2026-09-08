@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
@@ -20,7 +21,9 @@ import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.SliceDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
+import com.fitness.application.gym.workout.DTO.WorkoutPlanDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutSetDTO;
+import com.fitness.application.gym.workout.entity.WorkoutPlan;
 import com.fitness.application.gym.workout.entity.WorkoutSet;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.UserService;
@@ -123,5 +126,38 @@ public class WorkoutController {
         workoutService.deleteExerciseFromWorkout(wId, exId,user);
         log.info("DELETE /workout/{}/exercise/{}", wId, exId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/workout/plan/{id}")
+    public ResponseEntity<WorkoutPlanDTO> getWorkoutPlan(@PathVariable Long id){
+        log.info("GET /workout/plan/{} ", id);
+        return ResponseEntity.status(HttpStatus.OK).body(workoutService.getWorkoutPlanDTO(id));
+    }
+
+    @PostMapping("/workout/plan")
+    public ResponseEntity<WorkoutPlanDTO> createWorkoutPlan(@RequestBody WorkoutPlan workoutPlan){
+        log.info("POST /workout/plan {}", workoutPlan.toString());
+        return ResponseEntity.status(HttpStatus.OK).body(workoutService.createWorkoutPlan(workoutPlan));
+    }
+
+    @PostMapping("/workout/plan/{pid}/exercise/{eid}")
+    public ResponseEntity<WorkoutPlanDTO> addExerciseToPlan(
+        @PathVariable Long pid,
+        @PathVariable Long eid,
+        @RequestParam int orderNum,
+        @CurrentUser User user
+    ){
+        log.info("POST /workout/plan/{}/exercise/{}?orderNum={}", pid, eid, orderNum);
+        return ResponseEntity.status(HttpStatus.OK).body(workoutService.addExerciseToPlan(pid, eid, orderNum, user));
+    }
+
+    @PostMapping("/workout/{wid}/plan/{pid}")
+    public ResponseEntity<WorkoutInfo> useWorkoutPlan(
+        @PathVariable Long wid,
+        @PathVariable Long pid,
+        @CurrentUser User user
+    ){
+        log.info("POST /workout/{}/plan/{}", wid, pid);
+        return ResponseEntity.status(HttpStatus.OK).body(workoutService.createWorkoutByPlan(pid, wid,user));
     }
 }

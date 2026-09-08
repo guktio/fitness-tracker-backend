@@ -16,18 +16,25 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Entity
 @Builder
+@ToString(exclude = {"workout", "sets"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkoutExercise {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(optional = false)
@@ -41,13 +48,14 @@ public class WorkoutExercise {
     private Integer orderNum;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
 
     @Builder.Default
     @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkoutSet> sets = new ArrayList<>();
 
-    public void addSet(WorkoutSet set){
+    public void addSet(WorkoutSet set) {
         if (set != null) {
             sets.add(set);
             set.setWorkoutExercise(this);
@@ -58,6 +66,6 @@ public class WorkoutExercise {
         if (set != null) {
             sets.remove(set);
             set.setWorkoutExercise(null);
-        }  
+        }
     }
 }

@@ -48,7 +48,7 @@ public class ExerciseService {
         );
     }
 
-    public Exercise getExerciseEntityById(Long id) {
+    public Exercise getExerciseOrThrow(Long id) {
         log.debug("getExerciseEntityById with id: {}",id);
         return exerciseRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Exercise not found"));
