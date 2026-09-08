@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fitness.application.gym.exercises.entity.Exercise;
+import com.fitness.application.gym.set.WorkoutSet;
 import com.fitness.application.users.entity.User;
 
 import jakarta.persistence.CascadeType;

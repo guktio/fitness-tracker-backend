@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.fitness.application.base.DTO.PageDTO;
-import com.fitness.application.exceptions.AccessDeniedExecption;
+import com.fitness.application.exceptions.AccessDeniedException;
 import com.fitness.application.security.UserDetailsImpl;
 import com.fitness.application.users.DTO.UserRequestDTO;
 import com.fitness.application.users.DTO.UserResponseDTO;
@@ -56,7 +56,7 @@ public class UserService implements UserDetailsService{
         User saved = getByUuidOrThrow(uuid);
 
         if (!reqUser.getUuid().equals(saved.getUuid()) && !hasPermition(reqUser)) {
-            throw new AccessDeniedExecption("U cant do it bro");
+            throw new AccessDeniedException("U cant do it bro");
         }
 
         if (data.getUsername() != null) {
@@ -85,7 +85,7 @@ public class UserService implements UserDetailsService{
     public void delete(User reqUser, UUID uuid){
         User saved = getByUuidOrThrow(uuid);
         if (!hasPermition(reqUser) && !reqUser.getUuid().equals(saved.getUuid())) {
-            throw new AccessDeniedExecption("U cant do it bro");
+            throw new AccessDeniedException("U cant do it bro");
         }
         userRepository.deleteById(uuid);
     }

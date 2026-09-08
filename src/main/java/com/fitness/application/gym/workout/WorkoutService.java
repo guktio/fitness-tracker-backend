@@ -3,30 +3,32 @@ package com.fitness.application.gym.workout;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fitness.application.base.DTO.PageDTO;
+import com.fitness.application.base.DTO.SliceDTO;
+import com.fitness.application.exceptions.UserNotFoundException;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
+import com.fitness.application.gym.plan.PlanService;
+import com.fitness.application.gym.plan.entity.PlanExercise;
+import com.fitness.application.gym.plan.entity.WorkoutPlan;
+import com.fitness.application.gym.set.WorkoutSet;
+import com.fitness.application.gym.set.SetDTO;
+import com.fitness.application.gym.set.SetMapper;
+import com.fitness.application.gym.set.SetRepository;
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
-import com.fitness.application.gym.workout.DTO.SliceDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
-import com.fitness.application.gym.workout.DTO.WorkoutPlanDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutSetDTO;
-import com.fitness.application.gym.workout.entity.PlanExercise;
 import com.fitness.application.gym.workout.entity.Workout;
 import com.fitness.application.gym.workout.entity.WorkoutExercise;
-import com.fitness.application.gym.workout.entity.WorkoutPlan;
-import com.fitness.application.gym.workout.entity.WorkoutSet;
 import com.fitness.application.gym.workout.repository.WorkoutExerciseRepository;
-import com.fitness.application.gym.workout.repository.WorkoutPlanExerciseRepository;
-import com.fitness.application.gym.workout.repository.WorkoutPlanRepository;
 import com.fitness.application.gym.workout.repository.WorkoutRepository;
-import com.fitness.application.gym.workout.repository.WorkoutSetRepository;
 import com.fitness.application.users.entity.User;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -43,15 +45,43 @@ public class WorkoutService {
 
     private final WorkoutExerciseRepository workoutExerciseRepository;
 
-    private final WorkoutSetRepository setRepository;
+    private final SetRepository setRepository;
 
-    private final WorkoutPlanRepository workoutPlanRepository;
-
-    private final WorkoutPlanExerciseRepository workoutPlanExerciseRepository;
+    private final PlanService planService;
 
     private final ExerciseService exerciseService;
 
     private final WorkoutMapper workoutMapper;
+
+    private final SetMapper setMapper;
+
+    public SliceDTO<WorkoutDTO> getWorkoutSlice(UUID uuid, Pageable pageable){
+        Slice<Workout> workout = workoutRepository.findAllByCreatedByUuid(uuid, pageable);
+        return new SliceDTO<WorkoutDTO>(
+            workout.getContent()
+                .stream()
+                    .map(workoutMapper::toSimpleWorkoutDTO)
+                    .toList(),
+            workout.hasNext(),
+            workout.getNumber()
+        );
+    }
+
+    public PageDTO<WorkoutDTO> getAllWorkouts(User user, Pageable pageable){
+        if (user == null) {
+            throw new UserNotFoundException("User is null");
+        }
+        Page<Workout> workout = workoutRepository.findAllByCreatedByUuid(user.getUuid(), pageable);
+        log.info(workout.toString());
+        return new PageDTO<WorkoutDTO>(
+            workout.getContent()
+                .stream()
+                    .map(workoutMapper::toSimpleWorkoutDTO)
+                    .toList(),
+            workout.getPageable().getPageNumber(),
+            workout.getTotalPages()
+        );
+    }
 
     @Transactional
     public WorkoutDTO startWorkout(User user) {
@@ -94,7 +124,7 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutSetDTO addSetToWorkoutExercise(Long weId, WorkoutSet dto, User user) {
+    public SetDTO addSetToWorkoutExercise(Long weId, WorkoutSet dto, User user) {
         WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         if (!isAuthor(workoutExercise.getCreatedBy().getUuid(),user)) {
             throw new RuntimeException("Cannot add set: workout belongs to another user.");
@@ -109,7 +139,7 @@ public class WorkoutService {
                                 .build();
         workoutExercise.addSet(set);
         WorkoutSet savedSet = setRepository.saveAndFlush(set);
-        return workoutMapper.toSetDTO(savedSet);
+        return setMapper.toSetDTO(savedSet);
     }
 
     @Transactional
@@ -133,18 +163,6 @@ public class WorkoutService {
         workoutExerciseRepository.saveAndFlush(workoutExercise);
     }
 
-    public SliceDTO<WorkoutDTO> getWorkoutSlice(UUID uuid, Pageable pageable){
-        Slice<Workout> workout = workoutRepository.findAllByCreatedByUuid(uuid, pageable);
-        return new SliceDTO<WorkoutDTO>(
-            workout.getContent()
-                .stream()
-                    .map(workoutMapper::toSimpleWorkoutDTO)
-                    .toList(),
-            !workout.isLast(),
-            workout.getNumber()
-        );
-    }
-
     public WorkoutInfo getWorkoutInfo(Long wId){
         Workout workout = getWorkoutOrThrow(wId);
         return workoutMapper.toWorkoutInfo(workout);
@@ -164,40 +182,9 @@ public class WorkoutService {
         return entityAuthorUuid.equals(currentUserUuid.getUuid());
     }
 
-    private WorkoutPlan getWorkoutPlanOrThrow(Long id){
-        return workoutPlanRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("WorkoutPlan with id:"+id+" not found"));
-    }
-
-    public WorkoutPlanDTO getWorkoutPlanDTO(Long id){
-        return workoutMapper.toWorkoutPlanDTO(getWorkoutPlanOrThrow(id));
-    }
-
-    public WorkoutPlanDTO createWorkoutPlan(WorkoutPlan workoutPlan){
-        WorkoutPlan saved = workoutPlanRepository.save(workoutPlan);
-        return workoutMapper.toWorkoutPlanDTO(saved);
-    }
-
-    @Transactional
-    public WorkoutPlanDTO addExerciseToPlan(long pid, long eid, int orderNum, User user){
-        WorkoutPlan workoutPlan = getWorkoutPlanOrThrow(pid);
-        Exercise exercise = exerciseService.getExerciseOrThrow(eid);
-        PlanExercise pExercise = PlanExercise.builder()
-                                        .orderNum(orderNum)
-                                        .exercise(exercise)
-                                        .workoutPlan(workoutPlan)
-                                        .createdBy(user)
-                                        .build();
-        workoutPlanExerciseRepository.saveAndFlush(pExercise);
-        workoutPlan.getExercises().add(pExercise);
-        WorkoutPlan newWorkoutPlan = workoutPlanRepository.save(workoutPlan);
-        log.info(newWorkoutPlan.toString());
-        return workoutMapper.toWorkoutPlanDTO(newWorkoutPlan);
-    }
-
     @Transactional
     public WorkoutInfo createWorkoutByPlan(long plan_id, long workout_id, User user){
-        WorkoutPlan workoutPlan = getWorkoutPlanOrThrow(plan_id);
+        WorkoutPlan workoutPlan = planService.getWorkoutPlanOrThrow(plan_id);
         Workout workout = getWorkoutOrThrow(workout_id);
         List<PlanExercise> exercises = workoutPlan.getExercises();
         for (PlanExercise exercise : exercises) {

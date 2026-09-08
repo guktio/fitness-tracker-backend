@@ -71,9 +71,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 
-    @ExceptionHandler(AccessDeniedExecption.class)
+    @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDeniedExecption(
-        AccessDeniedExecption ex
+        AccessDeniedException ex
     ){
         Map<String, String> errors = new HashMap<>();
 

@@ -1,7 +1,7 @@
-package com.fitness.application.gym.workout.DTO;
+package com.fitness.application.gym.plan.DTO;
 
 import com.fitness.application.gym.exercises.DTO.ExerciseDTO;
-import com.fitness.application.gym.workout.entity.WorkoutPlan;
+import com.fitness.application.gym.plan.entity.WorkoutPlan;
 
 import lombok.Builder;
 import lombok.Data;

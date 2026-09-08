@@ -1,4 +1,4 @@
-package com.fitness.application.gym.workout.entity;
+package com.fitness.application.gym.plan.entity;
 
 import java.util.ArrayList;
 import java.util.List;

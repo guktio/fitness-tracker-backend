@@ -2,6 +2,8 @@ package com.fitness.application.gym.workout.DTO;
 
 import java.util.List;
 
+import com.fitness.application.gym.set.SetDTO;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,6 +15,6 @@ public class WorkoutExerciseDTO {
     private Integer orderNum;
     private String exerciseName;
 
-    private List<WorkoutSetDTO> set;
+    private List<SetDTO> set;
         
 }

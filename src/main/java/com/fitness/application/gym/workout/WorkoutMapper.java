@@ -9,18 +9,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.fitness.application.gym.exercises.ExerciseMapper;
-import com.fitness.application.gym.workout.DTO.PlanExerciseDTO;
+import com.fitness.application.gym.set.SetDTO;
+import com.fitness.application.gym.set.SetMapper;
 import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
-import com.fitness.application.gym.workout.DTO.WorkoutPlanDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutSetDTO;
-import com.fitness.application.gym.workout.entity.PlanExercise;
 import com.fitness.application.gym.workout.entity.Workout;
 import com.fitness.application.gym.workout.entity.WorkoutExercise;
-import com.fitness.application.gym.workout.entity.WorkoutPlan;
-import com.fitness.application.gym.workout.entity.WorkoutSet;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor 
 public class WorkoutMapper {
 
-    private final ExerciseMapper exerciseMapper;
+    private final SetMapper setMapper;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy");
 
@@ -49,20 +44,10 @@ public class WorkoutMapper {
                 .build();
     }
 
-    public WorkoutSetDTO toSetDTO(WorkoutSet s) {
-        return WorkoutSetDTO.builder()
-                .id(s.getId())
-                .setNumber(s.getSetNumber())
-                .weight(s.getWeight())
-                .reps(s.getReps())
-                .rpe(s.getRpe())
-                .build();
-    }
-
     public WorkoutExerciseDTO toWorkoutExerciseDTO(WorkoutExercise we){
-        List<WorkoutSetDTO> setDTOs = we.getSets().stream()
+        List<SetDTO> setDTOs = we.getSets().stream()
                         .filter(s -> s != null)
-                        .map(s -> toSetDTO(s))
+                        .map(s -> setMapper.toSetDTO(s))
                         .collect(Collectors.toList());
 
         String exerciseName = Optional.ofNullable(we.getExercise())
@@ -83,31 +68,5 @@ public class WorkoutMapper {
         dto.setStatus(workout.getStatus());
         dto.setId(workout.getId());
         return dto;
-    }
-
-    public WorkoutPlanDTO toWorkoutPlanDTO(WorkoutPlan workoutPlan) {
-        return WorkoutPlanDTO.builder()
-                .id(workoutPlan.getId())
-                .title(workoutPlan.getTitle())
-                .description(workoutPlan.getDescription())
-                .exercises(toPlanExerciseDTO(workoutPlan.getExercises()))
-                .build();
-    }
-
-    public List<PlanExerciseDTO> toPlanExerciseDTO(List<PlanExercise> exercises) {
-        if (exercises == null) {
-            return List.of();
-        }
-        return exercises.stream()
-                .map(this::toPlanExerciseDTO)
-                .collect(Collectors.toList());
-    }
-
-    public PlanExerciseDTO toPlanExerciseDTO(PlanExercise pe) {
-        return PlanExerciseDTO.builder()
-                .id(pe.getId())
-                .orderNum(pe.getOrderNum())
-                .exercise(exerciseMapper.toDTO(pe.getExercise()))
-                .build();
     }
 }
