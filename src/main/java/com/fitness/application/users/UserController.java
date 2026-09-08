@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fitness.application.base.DTO.PageDTO;
+import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.DTO.UserRequestDTO;
 import com.fitness.application.users.DTO.UserResponseDTO;
+import com.fitness.application.users.entity.User;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -37,11 +39,14 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getByUuid(uuid));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{uuid}")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID uuid, @RequestBody UserRequestDTO user){
+    public ResponseEntity<UserResponseDTO> updateUser(
+        @CurrentUser User user,
+        @PathVariable UUID uuid, 
+        @RequestBody UserRequestDTO data
+    ){
         log.info("PUT /users/{}", uuid.toString());
-        return ResponseEntity.ok().body(userService.update(user, uuid));
+        return ResponseEntity.ok().body(userService.update(user, uuid, data));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -51,10 +56,13 @@ public class UserController {
         return ResponseEntity.ok().body(userService.create(user));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{uuid}")
-    public ResponseEntity<HttpStatus> delete(@PathVariable UUID uuid){
+    public ResponseEntity<HttpStatus> delete(
+        @CurrentUser User user,
+        @PathVariable UUID uuid
+    ){
         log.info("DELETE /users/{}", uuid.toString());
+        userService.delete(user, uuid);
         return ResponseEntity.ok().build();
     }
 

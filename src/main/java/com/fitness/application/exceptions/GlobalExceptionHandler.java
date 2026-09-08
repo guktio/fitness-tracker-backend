@@ -70,4 +70,19 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
+
+    @ExceptionHandler(AccessDeniedExecption.class)
+    public ResponseEntity<Map<String, String>> handleAccessDeniedExecption(
+        AccessDeniedExecption ex
+    ){
+        Map<String, String> errors = new HashMap<>();
+
+        errors.put("error", "Access denied");
+        errors.put("message", ex.getMessage());
+        logger.info("Handled AccessDeniedExecption");
+        logger.debug(ex.toString());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
+    }
+
 }

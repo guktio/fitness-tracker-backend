@@ -1,5 +1,6 @@
 package com.fitness.application.users;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -10,9 +11,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.fitness.application.base.DTO.PageDTO;
+import com.fitness.application.exceptions.AccessDeniedExecption;
 import com.fitness.application.security.UserDetailsImpl;
 import com.fitness.application.users.DTO.UserRequestDTO;
 import com.fitness.application.users.DTO.UserResponseDTO;
+import com.fitness.application.users.entity.Roles;
 import com.fitness.application.users.entity.User;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -41,17 +44,28 @@ public class UserService implements UserDetailsService{
         return !userRepository.existsByEmail(email);
     }
 
-    public UserResponseDTO update(UserRequestDTO newUser, UUID uuid) {
-        User saved = userRepository.findById(uuid).orElseThrow(() ->
-            new EntityNotFoundException("User with uuid: " + uuid + " was not found")
-        );
+    private boolean hasPermition(User user){
+        Set<Roles> roles = user.getRoles();
+        if (roles.contains(Roles.ADMIN) || roles.contains(Roles.MODERATOR)) {
+            return true;
+        }
+        return false;
+    }
 
-        if (newUser.getUsername() != null) {
-            saved.setUsername(newUser.getUsername());
+    public UserResponseDTO update(User reqUser, UUID uuid, UserRequestDTO data) {
+        User saved = getByUuidOrThrow(uuid);
+
+        if (!reqUser.getUuid().equals(saved.getUuid()) && !hasPermition(reqUser)) {
+            throw new AccessDeniedExecption("U cant do it bro");
         }
-        if (newUser.getEmail() != null) {
-            saved.setEmail(newUser.getEmail());
+
+        if (data.getUsername() != null) {
+            saved.setUsername(data.getUsername());
         }
+        if (data.getEmail() != null) {
+            saved.setEmail(data.getEmail());
+        }
+
         return userMapper.toResponseDto(userRepository.save(saved));
     }
 
@@ -65,14 +79,14 @@ public class UserService implements UserDetailsService{
     }
     
     public UserResponseDTO getByUuid(UUID uuid){
-        return userMapper.toResponseDto(
-            userRepository.findById(uuid).orElseThrow(() -> 
-                new EntityNotFoundException("User with uuid:"+ uuid +" was not found")
-            )
-        );
+        return userMapper.toResponseDto(getByUuidOrThrow(uuid));
     }
 
-    public void delete(UUID uuid){
+    public void delete(User reqUser, UUID uuid){
+        User saved = getByUuidOrThrow(uuid);
+        if (!hasPermition(reqUser) && !reqUser.getUuid().equals(saved.getUuid())) {
+            throw new AccessDeniedExecption("U cant do it bro");
+        }
         userRepository.deleteById(uuid);
     }
 
@@ -93,5 +107,11 @@ public class UserService implements UserDetailsService{
             throw new EntityNotFoundException("User not found");
         }
         return user;
+    }
+
+    private User getByUuidOrThrow(UUID uuid){
+        return userRepository.findById(uuid).orElseThrow(() -> 
+                new EntityNotFoundException("User with uuid:"+ uuid +" was not found")
+            );
     }
 }
