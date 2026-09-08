@@ -9,8 +9,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fitness.application.base.DTO.PageDTO;
-import com.fitness.application.base.DTO.SliceDTO;
+import com.fitness.application.base.dto.PageDTO;
+import com.fitness.application.base.dto.SliceDTO;
 import com.fitness.application.exceptions.UserNotFoundException;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;

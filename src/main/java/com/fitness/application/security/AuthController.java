@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fitness.application.users.UserMapper;
 import com.fitness.application.users.UserService;
-import com.fitness.application.users.DTO.UserRequestDTO;
-import com.fitness.application.users.DTO.UserResponseDTO;
+import com.fitness.application.users.dto.UserRequestDTO;
+import com.fitness.application.users.dto.UserResponseDTO;
 import com.fitness.application.users.entity.User;
 
 import lombok.RequiredArgsConstructor;

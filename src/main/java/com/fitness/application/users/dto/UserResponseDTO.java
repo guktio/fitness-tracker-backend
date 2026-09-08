@@ -1,4 +1,4 @@
-package com.fitness.application.users.DTO;
+package com.fitness.application.users.dto;
 
 import java.util.Set;
 import java.util.UUID;

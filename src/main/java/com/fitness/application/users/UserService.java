@@ -10,11 +10,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.fitness.application.base.DTO.PageDTO;
+import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.exceptions.AccessDeniedException;
 import com.fitness.application.security.UserDetailsImpl;
-import com.fitness.application.users.DTO.UserRequestDTO;
-import com.fitness.application.users.DTO.UserResponseDTO;
+import com.fitness.application.users.dto.UserRequestDTO;
+import com.fitness.application.users.dto.UserResponseDTO;
 import com.fitness.application.users.entity.Roles;
 import com.fitness.application.users.entity.User;
 

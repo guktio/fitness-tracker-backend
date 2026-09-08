@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fitness.application.base.DTO.PageDTO;
+import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.security.CurrentUser;
-import com.fitness.application.users.DTO.UserRequestDTO;
-import com.fitness.application.users.DTO.UserResponseDTO;
+import com.fitness.application.users.dto.UserRequestDTO;
+import com.fitness.application.users.dto.UserResponseDTO;
 import com.fitness.application.users.entity.User;
 
 import jakarta.validation.Valid;

@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
-import com.fitness.application.gym.plan.DTO.WorkoutPlanDTO;
+import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.gym.plan.repository.PlanExerciseRepository;

@@ -14,11 +14,11 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
-import com.fitness.application.gym.exercises.DTO.CreateExerciseDTO;
-import com.fitness.application.gym.exercises.DTO.ExerciseDTO;
-import com.fitness.application.gym.exercises.DTO.ExerciseMuscleDTO;
-import com.fitness.application.gym.exercises.DTO.MuscleImpactDTO;
-import com.fitness.application.gym.exercises.DTO.muscles.MuscleDTO;
+import com.fitness.application.gym.exercises.dto.CreateExerciseDTO;
+import com.fitness.application.gym.exercises.dto.ExerciseDTO;
+import com.fitness.application.gym.exercises.dto.ExerciseMuscleDTO;
+import com.fitness.application.gym.exercises.dto.MuscleImpactDTO;
+import com.fitness.application.gym.exercises.dto.muscles.MuscleDTO;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.exercises.entity.ExerciseMuscle;
 import com.fitness.application.gym.exercises.entity.ExerciseMuscle.MuscleImpact;

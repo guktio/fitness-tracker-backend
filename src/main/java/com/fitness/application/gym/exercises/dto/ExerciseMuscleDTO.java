@@ -1,4 +1,4 @@
-package com.fitness.application.gym.exercises.DTO;
+package com.fitness.application.gym.exercises.dto;
 
 import java.util.Set;
 

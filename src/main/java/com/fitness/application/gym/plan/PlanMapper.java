@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.fitness.application.gym.exercises.ExerciseMapper;
-import com.fitness.application.gym.plan.DTO.PlanExerciseDTO;
-import com.fitness.application.gym.plan.DTO.WorkoutPlanDTO;
+import com.fitness.application.gym.plan.dto.PlanExerciseDTO;
+import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 

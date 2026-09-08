@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fitness.application.base.DTO.PageDTO;
-import com.fitness.application.gym.exercises.DTO.CreateExerciseDTO;
-import com.fitness.application.gym.exercises.DTO.ExerciseDTO;
-import com.fitness.application.gym.exercises.DTO.muscles.MuscleDTO;
+import com.fitness.application.base.dto.PageDTO;
+import com.fitness.application.gym.exercises.dto.CreateExerciseDTO;
+import com.fitness.application.gym.exercises.dto.ExerciseDTO;
+import com.fitness.application.gym.exercises.dto.muscles.MuscleDTO;
 import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.UserService;

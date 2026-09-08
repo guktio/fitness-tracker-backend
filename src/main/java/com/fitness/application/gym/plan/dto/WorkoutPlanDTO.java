@@ -1,4 +1,4 @@
-package com.fitness.application.gym.plan.DTO;
+package com.fitness.application.gym.plan.dto;
 
 import java.util.List;
 

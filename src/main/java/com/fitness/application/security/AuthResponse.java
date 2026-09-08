@@ -1,6 +1,6 @@
 package com.fitness.application.security;
 
-import com.fitness.application.users.DTO.UserResponseDTO;
+import com.fitness.application.users.dto.UserResponseDTO;
 
 import lombok.Builder;
 import lombok.Data;

@@ -2,8 +2,8 @@ package com.fitness.application.users;
 
 import org.springframework.stereotype.Component;
 
-import com.fitness.application.users.DTO.UserRequestDTO;
-import com.fitness.application.users.DTO.UserResponseDTO;
+import com.fitness.application.users.dto.UserRequestDTO;
+import com.fitness.application.users.dto.UserResponseDTO;
 import com.fitness.application.users.entity.User;
 
 @Component

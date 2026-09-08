@@ -1,4 +1,4 @@
-package com.fitness.application.gym.exercises.DTO;
+package com.fitness.application.gym.exercises.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

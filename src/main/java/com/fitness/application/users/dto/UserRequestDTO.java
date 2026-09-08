@@ -1,4 +1,4 @@
-package com.fitness.application.users.DTO;
+package com.fitness.application.users.dto;
 
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;

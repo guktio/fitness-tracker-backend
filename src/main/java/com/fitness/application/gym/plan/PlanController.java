@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fitness.application.gym.plan.DTO.WorkoutPlanDTO;
+import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.entity.User;

@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fitness.application.base.DTO.PageDTO;
-import com.fitness.application.base.DTO.SliceDTO;
 import com.fitness.application.gym.set.WorkoutSet;
+import com.fitness.application.base.dto.PageDTO;
+import com.fitness.application.base.dto.SliceDTO;
 import com.fitness.application.gym.set.SetDTO;
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutDTO;

@@ -9,10 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fitness.application.base.DTO.PageDTO;
-import com.fitness.application.gym.exercises.DTO.CreateExerciseDTO;
-import com.fitness.application.gym.exercises.DTO.ExerciseDTO;
-import com.fitness.application.gym.exercises.DTO.muscles.MuscleDTO;
+import com.fitness.application.base.dto.PageDTO;
+import com.fitness.application.gym.exercises.dto.CreateExerciseDTO;
+import com.fitness.application.gym.exercises.dto.ExerciseDTO;
+import com.fitness.application.gym.exercises.dto.muscles.MuscleDTO;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.gym.exercises.repository.ExerciseRepository;

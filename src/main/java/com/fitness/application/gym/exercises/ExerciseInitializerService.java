@@ -1,8 +1,8 @@
 package com.fitness.application.gym.exercises;
 
-import com.fitness.application.gym.exercises.DTO.CreateExerciseDTO;
-import com.fitness.application.gym.exercises.DTO.ExerciseMuscleDTO;
-import com.fitness.application.gym.exercises.DTO.MuscleImpactDTO;
+import com.fitness.application.gym.exercises.dto.CreateExerciseDTO;
+import com.fitness.application.gym.exercises.dto.ExerciseMuscleDTO;
+import com.fitness.application.gym.exercises.dto.MuscleImpactDTO;
 import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.users.entity.User;
 import lombok.RequiredArgsConstructor;
