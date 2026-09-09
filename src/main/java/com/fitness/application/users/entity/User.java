@@ -1,5 +1,6 @@
 package com.fitness.application.users.entity;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,7 +40,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted=true WHERE uuid = ?")
+@SQLDelete(sql = "UPDATE users SET deleted=true, deleted_on=NOW() WHERE uuid = ?")
 @SQLRestriction("deleted = false")
 public class User extends BaseEntity {
     @Id
@@ -63,6 +64,9 @@ public class User extends BaseEntity {
 
     @Builder.Default
     private boolean deleted = false;
+
+    @Column(name = "deleted_on")
+    private LocalDateTime deletedOn;
 
     @PrePersist
     protected void onCreate() {
