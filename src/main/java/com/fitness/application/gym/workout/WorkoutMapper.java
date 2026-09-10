@@ -63,10 +63,10 @@ public class WorkoutMapper {
     } 
 
     public WorkoutDTO toSimpleWorkoutDTO(Workout workout){
-        WorkoutDTO dto = new WorkoutDTO();
-        dto.setCreatedAt(prettyTime(workout.getCreatedAt()));
-        dto.setStatus(workout.getStatus());
-        dto.setId(workout.getId());
-        return dto;
+        return WorkoutDTO.builder()
+                            .createdAt(prettyTime(workout.getCreatedAt()))
+                            .status(workout.getStatus())
+                            .id(workout.getId())
+                            .build();
     }
 }

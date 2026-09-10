@@ -1,18 +1,16 @@
 package com.fitness.application;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+import lombok.extern.slf4j.Slf4j;
+
 @EnableJpaAuditing
 @SpringBootApplication
+@Slf4j 
 public class Application implements CommandLineRunner{
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-	
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -20,7 +18,7 @@ public class Application implements CommandLineRunner{
 
 	@Override
 	public void run(String... args) throws Exception {
-		logger.info("Started!");
-		logger.debug("Debug mode activated!");
+		log.info("Started!");
+		log.debug("Debug mode activated!");
 	}
 }
