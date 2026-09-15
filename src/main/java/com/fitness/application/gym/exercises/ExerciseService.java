@@ -18,6 +18,7 @@ import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.gym.exercises.repository.ExerciseRepository;
 import com.fitness.application.users.entity.User;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,16 +43,13 @@ public class ExerciseService {
     @Transactional(readOnly = true)
     public ExerciseDTO getExerciseById(Long id) {
         log.debug("getExerciseById with id: {} & Locale: {}", id);
-        return exerciseMapper.toDTO(
-            exerciseRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Exercise not found"))
-        );
+        return exerciseMapper.toDTO(getExerciseOrThrow(id));
     }
 
     public Exercise getExerciseOrThrow(Long id) {
         log.debug("getExerciseEntityById with id: {}",id);
         return exerciseRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Exercise not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Exercise not found"));
     }
 
     public PageDTO<ExerciseDTO> getAllExercises(Pageable pageable) {
