@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.base.dto.SliceDTO;
-import com.fitness.application.exceptions.UserNotFoundException;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.plan.PlanService;
@@ -68,9 +67,6 @@ public class WorkoutService {
     }
 
     public PageDTO<WorkoutDTO> getAllWorkouts(User user, Pageable pageable){
-        if (user == null) {
-            throw new UserNotFoundException("User is null");
-        }
         Page<Workout> workout = workoutRepository.findAllByCreatedByUuid(user.getUuid(), pageable);
         log.info(workout.toString());
         return new PageDTO<WorkoutDTO>(

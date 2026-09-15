@@ -24,7 +24,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import com.fitness.application.base.dto.PageDTO;
-import com.fitness.application.exceptions.UserNotFoundException;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.plan.PlanService;
@@ -118,11 +117,11 @@ class WorkoutServiceTest {
     //     assertEquals(0, result.getCurrentPage());
     // }
 
-    @Test
-    void getAllWorkouts_whenUserIsNull_shouldThrowUserNotFoundException() {
-        Pageable pageable = PageRequest.of(0, 10);
-        assertThrows(UserNotFoundException.class, () -> workoutService.getAllWorkouts(null, pageable));
-    }
+    // @Test
+    // void getAllWorkouts_whenUserIsNull_shouldThrowUserNotFoundException() {
+    //     Pageable pageable = PageRequest.of(0, 10);
+    //     assertThrows(UserNotFoundException.class, () -> workoutService.getAllWorkouts(null, pageable));
+    // }
 
     @Test
     void getAllWorkouts_whenUserIsValid_shouldReturnPageDTO() {

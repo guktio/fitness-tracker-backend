@@ -39,8 +39,10 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/gym/**").authenticated()
                 .requestMatchers("/api/auth/whoami").authenticated()
                 .requestMatchers("/api/workout/**").authenticated()
+                .requestMatchers("/api/users/check/**").permitAll()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()

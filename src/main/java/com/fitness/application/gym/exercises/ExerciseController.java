@@ -22,7 +22,6 @@ import com.fitness.application.gym.exercises.dto.ExerciseDTO;
 import com.fitness.application.gym.exercises.dto.muscles.MuscleDTO;
 import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.security.CurrentUser;
-import com.fitness.application.users.UserService;
 import com.fitness.application.users.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -35,11 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ExerciseController {
 
     private final ExerciseService exerciseService;
-    private final UserService userService;
 
     @PostMapping("/exercise")
     public ResponseEntity<ExerciseDTO> createExercise(@RequestBody CreateExerciseDTO exercise, @CurrentUser User user) {
-        userService.getUserOrThrowNotFound(user);
         log.info("POST /api/gym/exercise - Creating exercise with name: {} for user: {}", exercise.getName(), user.getUuid());
         ExerciseDTO response = exerciseService.createExercise(exercise, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
