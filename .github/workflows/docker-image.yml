@@ -1,0 +1,30 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: |
+        TAG=$(date +%s)
+        IMAGE_NAME="fit-app-dev:${TAG}"
+        
+        docker build . --file Dockerfile --tag $IMAGE_NAME
+        docker save -o my-image.tar $IMAGE_NAME
+        
+    - name: Create Release and Upload Asset
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "my-image.tar"
+        tag: "v1.0.${{ github.run_number }}"
+        token: ${{ secrets.GITHUB_TOKEN }}
