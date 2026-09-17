@@ -1,4 +1,4 @@
-package com.fitness.application.gym.set;
+package com.fitness.application.gym.set.dto;
 
 import lombok.Builder;
 import lombok.Getter;

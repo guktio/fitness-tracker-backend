@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
+import com.fitness.application.gym.plan.dto.CreatePlanDTO;
 import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
@@ -38,7 +39,8 @@ public class PlanService {
         return planMapper.toWorkoutPlanDTO(getWorkoutPlanOrThrow(id));
     }
 
-    public WorkoutPlanDTO createWorkoutPlan(WorkoutPlan workoutPlan){
+    public WorkoutPlanDTO createWorkoutPlan(CreatePlanDTO dto){
+        WorkoutPlan workoutPlan = planMapper.toEntity(dto);
         WorkoutPlan saved = planRepository.save(workoutPlan);
         return planMapper.toWorkoutPlanDTO(saved);
     }

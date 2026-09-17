@@ -2,6 +2,8 @@ package com.fitness.application.gym.set;
 
 import org.springframework.stereotype.Service;
 
+import com.fitness.application.gym.set.dto.SetDTO;
+
 @Service 
 public class SetMapper {
 
@@ -14,5 +16,4 @@ public class SetMapper {
                 .rpe(s.getRpe())
                 .build();
     }
-    
 }

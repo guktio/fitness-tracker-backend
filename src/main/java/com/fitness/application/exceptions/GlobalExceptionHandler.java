@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -29,6 +30,7 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             errors.put(error.getField(), error.getDefaultMessage());
         });
+        logger.error(ex.getMessage());
         
         return ResponseEntity.badRequest().body(errors);
     }
@@ -40,8 +42,8 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new HashMap<>();
 
         errors.put("error", ex.getClass().getSimpleName());
-        errors.put("message", "Entity already exists");
-        
+        errors.put("message", ex.getMessage());
+        logger.error(ex.getMessage());
         return ResponseEntity.badRequest().body(errors);
     }
 
@@ -53,6 +55,7 @@ public class GlobalExceptionHandler {
 
         errors.put("error", "Unauthorized");
         errors.put("message", "Invalid email or password");
+        logger.error(ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
     }
@@ -65,7 +68,7 @@ public class GlobalExceptionHandler {
 
         errors.put("error", "Not Found");
         errors.put("message", ex.getMessage());
-        logger.info("Handled EntityNotFoundException");
+        logger.error(ex.getMessage());
         logger.debug(ex.toString());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
@@ -77,12 +80,36 @@ public class GlobalExceptionHandler {
     ){
         Map<String, String> errors = new HashMap<>();
 
-        errors.put("error", "Access denied");
+        errors.put("error", "Access Denied");
         errors.put("message", ex.getMessage());
-        logger.info("Handled AccessDeniedExecption");
+        logger.error("Handled AccessDeniedExecption");
         logger.debug(ex.toString());
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
     }
 
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAuthorizationDeniedExecption(
+        AuthorizationDeniedException ex 
+    ){
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "Authorization Denied");
+        errors.put("message", ex.getMessage());
+        logger.error("Handled AuthorizationDeniedExecption");
+        logger.debug(ex.toString());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleException(
+        Exception ex
+    ){
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "Internal Server Error");
+        errors.put("message", ex.getMessage());
+        logger.error("Handled Exception");
+        logger.debug(ex.toString());
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
+    }
 }

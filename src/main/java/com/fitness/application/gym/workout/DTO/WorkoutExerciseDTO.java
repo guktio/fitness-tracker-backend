@@ -2,7 +2,7 @@ package com.fitness.application.gym.workout.DTO;
 
 import java.util.List;
 
-import com.fitness.application.gym.set.SetDTO;
+import com.fitness.application.gym.set.dto.SetDTO;
 
 import lombok.Builder;
 import lombok.Getter;

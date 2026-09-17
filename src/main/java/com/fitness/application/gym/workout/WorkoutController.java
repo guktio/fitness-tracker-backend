@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fitness.application.gym.set.WorkoutSet;
+import com.fitness.application.gym.set.dto.CreateSetDTO;
+import com.fitness.application.gym.set.dto.SetDTO;
 import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.base.dto.SliceDTO;
-import com.fitness.application.gym.set.SetDTO;
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
@@ -93,7 +93,7 @@ public class WorkoutController {
     @PostMapping("/workout/exercise/{workoutExerciseId}/set")
     public ResponseEntity<SetDTO> addSet(
             @PathVariable Long workoutExerciseId,
-            @RequestBody WorkoutSet set,
+            @RequestBody CreateSetDTO set,
             @CurrentUser User user
     ) {
         userService.getUserOrThrowNotFound(user);
