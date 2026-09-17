@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitness.application.gym.plan.dto.CreatePlanDTO;
 import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
-import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.entity.User;
 
@@ -36,7 +36,7 @@ public class PlanController {
 
     @PostMapping("/workout/plan")
     public ResponseEntity<WorkoutPlanDTO> createWorkoutPlan(
-        @RequestBody WorkoutPlan workoutPlan
+        @RequestBody CreatePlanDTO workoutPlan
     ){
         log.info("POST /workout/plan {}", workoutPlan.toString());
         return ResponseEntity.status(HttpStatus.OK).body(planService.createWorkoutPlan(workoutPlan));

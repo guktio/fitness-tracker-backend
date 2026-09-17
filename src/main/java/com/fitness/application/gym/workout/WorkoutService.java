@@ -17,7 +17,8 @@ import com.fitness.application.gym.plan.PlanService;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.gym.set.WorkoutSet;
-import com.fitness.application.gym.set.SetDTO;
+import com.fitness.application.gym.set.dto.CreateSetDTO;
+import com.fitness.application.gym.set.dto.SetDTO;
 import com.fitness.application.gym.set.SetMapper;
 import com.fitness.application.gym.set.SetRepository;
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
@@ -120,7 +121,7 @@ public class WorkoutService {
     }
 
     @Transactional
-    public SetDTO addSetToWorkoutExercise(Long weId, WorkoutSet dto, User user) {
+    public SetDTO addSetToWorkoutExercise(Long weId, CreateSetDTO dto, User user) {
         WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         if (!isAuthor(workoutExercise.getCreatedBy().getUuid(),user)) {
             throw new RuntimeException("Cannot add set: workout belongs to another user.");

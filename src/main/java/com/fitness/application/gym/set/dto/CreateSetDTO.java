@@ -1,12 +1,11 @@
-package com.fitness.application.gym.set;
+package com.fitness.application.gym.set.dto;
 
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
-@Builder
-@Getter
-public class SetDTO {
-    private Long id;
+@Data 
+@Builder 
+public class CreateSetDTO {
     private Integer setNumber;
     private Double weight;
     private Integer reps;

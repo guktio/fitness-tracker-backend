@@ -29,10 +29,11 @@ import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.plan.PlanService;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
-import com.fitness.application.gym.set.SetDTO;
 import com.fitness.application.gym.set.SetMapper;
 import com.fitness.application.gym.set.SetRepository;
 import com.fitness.application.gym.set.WorkoutSet;
+import com.fitness.application.gym.set.dto.CreateSetDTO;
+import com.fitness.application.gym.set.dto.SetDTO;
 import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
@@ -222,7 +223,7 @@ class WorkoutServiceTest {
                 .sets(new ArrayList<>())
                 .build();
 
-        WorkoutSet setToAdd = WorkoutSet.builder()
+        CreateSetDTO setToAdd = CreateSetDTO.builder()
                 .weight(100.0)
                 .setNumber(1)
                 .reps(10)
@@ -267,7 +268,12 @@ class WorkoutServiceTest {
                 .sets(new ArrayList<>())
                 .build();
 
-        WorkoutSet setToAdd = WorkoutSet.builder().weight(100.0).build();
+        CreateSetDTO setToAdd = CreateSetDTO.builder()
+                .weight(100.0)
+                .setNumber(1)
+                .reps(10)
+                .rpe(8.0)
+                .build();
         when(workoutExerciseRepository.findById(10L)).thenReturn(Optional.of(workoutExercise));
 
         assertThrows(RuntimeException.class, () -> workoutService.addSetToWorkoutExercise(10L, setToAdd, otherUser));

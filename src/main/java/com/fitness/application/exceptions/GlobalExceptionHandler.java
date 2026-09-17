@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
     ){
         Map<String, String> errors = new HashMap<>();
 
-        errors.put("error", "Access denied");
+        errors.put("error", "Access Denied");
         errors.put("message", ex.getMessage());
         logger.info("Handled AccessDeniedExecption");
         logger.debug(ex.toString());
@@ -85,4 +85,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleException(
+        Exception ex
+    ){
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "Internal Server Error");
+        errors.put("message", ex.getMessage());
+        logger.info("Handled Exception");
+        logger.debug(ex.toString());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
+    }
 }

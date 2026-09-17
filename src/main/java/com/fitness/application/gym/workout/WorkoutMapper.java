@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.fitness.application.gym.set.SetDTO;
 import com.fitness.application.gym.set.SetMapper;
+import com.fitness.application.gym.set.dto.SetDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
 import com.fitness.application.gym.workout.DTO.WorkoutInfo;
