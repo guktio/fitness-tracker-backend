@@ -1,8 +1,8 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ "dev" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
 
@@ -19,7 +19,7 @@ jobs:
         IMAGE_NAME="fit-app-dev:${TAG}"
         
         docker build . --file Dockerfile --tag $IMAGE_NAME
-        docker save -o my-image.tar $IMAGE_NAME
+        docker save -o fit-app-image.tar $IMAGE_NAME
         
     - name: Create Release and Upload Asset
       uses: ncipollo/release-action@v1
