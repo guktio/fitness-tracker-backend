@@ -24,6 +24,6 @@ jobs:
     - name: Create Release and Upload Asset
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "my-image.tar"
+        artifacts: "fit-app-image.tar"
         tag: "v1.0.${{ github.run_number }}"
         token: ${{ secrets.GITHUB_TOKEN }}
