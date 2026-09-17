@@ -23,7 +23,6 @@ public class JwtService {
             throw new IllegalStateException("Secret key is null set up jwt.secret-key value!");
         }
         this.key = Keys.hmacShaKeyFor(SECRET_STRING.getBytes());
-        log.debug(SECRET_STRING);
     }
 
     private final MacAlgorithm alg = Jwts.SIG.HS256;

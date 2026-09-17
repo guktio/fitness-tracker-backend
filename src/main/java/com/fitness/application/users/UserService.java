@@ -56,7 +56,7 @@ public class UserService implements UserDetailsService{
         User saved = getByUuidOrThrow(uuid);
 
         if (!reqUser.getUuid().equals(saved.getUuid()) && !hasPermition(reqUser)) {
-            throw new AccessDeniedException("U cant do it bro");
+            throw new AccessDeniedException("You don't have permission to update this user");
         }
 
         if (data.getUsername() != null) {
@@ -85,7 +85,7 @@ public class UserService implements UserDetailsService{
     public void delete(User reqUser, UUID uuid){
         User saved = getByUuidOrThrow(uuid);
         if (!hasPermition(reqUser) && !reqUser.getUuid().equals(saved.getUuid())) {
-            throw new AccessDeniedException("U cant do it bro");
+            throw new AccessDeniedException("You don't have permission to delete this user");
         }
         userRepository.deleteById(uuid);
     }
@@ -93,7 +93,7 @@ public class UserService implements UserDetailsService{
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username).orElseThrow(
-            () -> new UsernameNotFoundException("User not found with username: " + username)
+            () -> new UsernameNotFoundException("Username: " + username + " not found")
         );
         return new UserDetailsImpl(user);
     }
