@@ -13,7 +13,6 @@ A REST API backend for tracking gym workouts. Users can log sessions, add exerci
 
 ## Table of Contents
 
-- [Tech Stack](#toc-tech-stack)
 - [Features](#toc-features)
 - [API Endpoints](#toc-api-endpoints)
   - [Authentication](#toc-authentication)
@@ -31,21 +30,6 @@ A REST API backend for tracking gym workouts. Users can log sessions, add exerci
   - [Quick Start (Docker CLI)](#toc-quick-start-cli)
   - [Quick Start (Docker Compose)](#toc-quick-start-compose)
   - [Notes](#toc-notes)
-
----
-
-<a id="toc-tech-stack"></a>
-## Tech Stack
-
-| Layer | Technology |
-| :--- | :--- |
-| Language | Java 21 |
-| Framework | Spring Boot 4.1 |
-| Security | Spring Security + JWT |
-| Persistence | Spring Data JPA / Hibernate |
-| Database | PostgreSQL (prod) · H2 (tests) |
-| Build | Gradle 9 (Kotlin DSL) |
-| Containerization | Docker / Docker Compose |
 
 ---
 
