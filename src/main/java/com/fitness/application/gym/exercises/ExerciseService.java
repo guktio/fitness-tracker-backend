@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,10 @@ public class ExerciseService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(
+        value = "exercise",
+        key = "#id + ':' + T(org.springframework.context.i18n.LocaleContextHolder).getLocale()"
+    )
     public ExerciseDTO getExerciseById(Long id) {
         log.debug("getExerciseById with id: {} & Locale: {}", id);
         return exerciseMapper.toDTO(getExerciseOrThrow(id));
@@ -67,11 +73,13 @@ public class ExerciseService {
         return exerciseMapper.getGroupedMuscles();
     }
 
+    @CacheEvict(value = "exercise", allEntries = true)
     public void deleteExercise(Long id) {
         log.debug("deleteExercise with id: {}", id);
         exerciseRepository.deleteById(id);
     }
 
+    
     public PageDTO<ExerciseDTO> getExerciseByFilter(String muscleName, Pageable pageable, UUID uuid){
         Muscle muscle = null;
         if (muscleName != null) {

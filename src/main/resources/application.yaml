@@ -9,3 +9,9 @@ springdoc:
     path: /api
   swagger-ui:
     path: /docs
+  
+spring:
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:fitapp-redis}
+      port: 6379

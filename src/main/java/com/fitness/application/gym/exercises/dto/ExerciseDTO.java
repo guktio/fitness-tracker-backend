@@ -1,5 +1,6 @@
 package com.fitness.application.gym.exercises.dto;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExerciseDTO {
+public class ExerciseDTO implements Serializable{
     private Long id;
     private String name;
     private String description;
