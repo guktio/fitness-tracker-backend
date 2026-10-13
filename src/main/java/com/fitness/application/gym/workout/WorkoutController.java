@@ -15,19 +15,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fitness.application.gym.set.dto.CreateSetDTO;
-import com.fitness.application.gym.set.dto.SetDTO;
 import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.base.dto.SliceDTO;
-import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutInfo;
+import com.fitness.application.gym.set.SetsDTO;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.UserService;
 import com.fitness.application.users.entity.User;
 
 import lombok.RequiredArgsConstructor;
+import lombok.var;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -40,7 +36,7 @@ public class WorkoutController {
     private final UserService userService;
 
     @GetMapping("/workouts/my")
-    public ResponseEntity<PageDTO<WorkoutDTO>> getWorkoutPage(
+    public ResponseEntity<PageDTO<WorkoutsDTO.Workout>> getWorkoutPage(
         @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
         @CurrentUser User user
     ){
@@ -49,56 +45,56 @@ public class WorkoutController {
     }
 
     @PostMapping("/workout/start")
-    public ResponseEntity<WorkoutDTO> startWorkout(
+    public ResponseEntity<WorkoutsDTO.Workout> startWorkout(
         @CurrentUser User user
     ) {
         userService.getUserOrThrowNotFound(user);
         log.info("POST /workout/start with Authentication: {}", user.toString());
-        WorkoutDTO workout = workoutService.startWorkout(user);
+        WorkoutsDTO.Workout workout = workoutService.startWorkout(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(workout);
     }
 
     @PostMapping("/workout/{id}/complete")
-    public ResponseEntity<WorkoutDTO> stopWorkout(
+    public ResponseEntity<WorkoutsDTO.Workout> stopWorkout(
         @PathVariable Long id, 
         @CurrentUser User user
     ) {
         log.info("POST /workout/{}/complete", id);
-        WorkoutDTO workout = workoutService.completeWorkout(id, user);
+        WorkoutsDTO.Workout workout = workoutService.completeWorkout(id, user);
         return ResponseEntity.ok(workout);
     }
 
     @GetMapping("/workout/{id}")
-    public ResponseEntity<WorkoutInfo> getWorkoutInfo(
+    public ResponseEntity<WorkoutsDTO.Info> getWorkoutInfo(
         @PathVariable Long id
     ) {
         log.info("GET /workout/{}", id);
-        WorkoutInfo body = workoutService.getWorkoutInfo(id);
+        WorkoutsDTO.Info body = workoutService.getWorkoutInfo(id);
         return ResponseEntity.ok(body);
     }
 
     @PostMapping("/workout/{workoutId}/exercise/{exerciseId}")
-    public ResponseEntity<WorkoutExerciseDTO> addExerciseToWorkoutDTO(
+    public ResponseEntity<WorkoutsDTO.WorkoutExercise> addExerciseToWorkoutDTO(
         @PathVariable Long workoutId,
         @PathVariable Long exerciseId,
-        @RequestBody ExerciseAddDTO exerciseAddDTO,
+        @RequestBody WorkoutsDTO.AddExercise exerciseAddDTO,
         @CurrentUser User user
     ) {
         userService.getUserOrThrowNotFound(user);
         log.info("POST /workout/exercise/{} with DTO: {} & Authentication: {}", workoutId, exerciseAddDTO.toString(), user.toString());
-        WorkoutExerciseDTO body = workoutService.addExerciseToWorkout(workoutId, exerciseId,exerciseAddDTO, user);
+        WorkoutsDTO.WorkoutExercise body = workoutService.addExerciseToWorkout(workoutId, exerciseId,exerciseAddDTO, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @PostMapping("/workout/exercise/{workoutExerciseId}/set")
-    public ResponseEntity<SetDTO> addSet(
+    public ResponseEntity<SetsDTO.Set> addSet(
             @PathVariable Long workoutExerciseId,
-            @RequestBody CreateSetDTO set,
+            @RequestBody SetsDTO.Create set,
             @CurrentUser User user
     ) {
         userService.getUserOrThrowNotFound(user);
         log.info("POST /workout/exercise/{}/set with DTO: {} & Authentication: {}" , workoutExerciseId, set.toString(), user.toString());
-        SetDTO response = workoutService.addSetToWorkoutExercise(workoutExerciseId, set, user);
+        var response = workoutService.addSetToWorkoutExercise(workoutExerciseId, set, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -115,12 +111,12 @@ public class WorkoutController {
     }
 
     @GetMapping("/user/workout/{uuid}")
-    public ResponseEntity<SliceDTO<WorkoutDTO>> getWorkoutByUser(
+    public ResponseEntity<SliceDTO<WorkoutsDTO.Workout>> getWorkoutByUser(
         @PathVariable UUID uuid,
         @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         log.info("GET /user/workout/{} with {}", uuid , pageable.toString());
-        SliceDTO<WorkoutDTO> slice = workoutService.getWorkoutSlice(uuid, pageable);
+        SliceDTO<WorkoutsDTO.Workout> slice = workoutService.getWorkoutSlice(uuid, pageable);
         return ResponseEntity.ok(slice);
     }
 
@@ -136,7 +132,7 @@ public class WorkoutController {
     }
 
     @PostMapping("/workout/{wid}/plan/{pid}")
-    public ResponseEntity<WorkoutInfo> useWorkoutPlan(
+    public ResponseEntity<WorkoutsDTO.Info> useWorkoutPlan(
         @PathVariable Long wid,
         @PathVariable Long pid,
         @CurrentUser User user

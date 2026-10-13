@@ -17,14 +17,9 @@ import com.fitness.application.gym.plan.PlanService;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.gym.set.WorkoutSet;
-import com.fitness.application.gym.set.dto.CreateSetDTO;
-import com.fitness.application.gym.set.dto.SetDTO;
 import com.fitness.application.gym.set.SetMapper;
 import com.fitness.application.gym.set.SetRepository;
-import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutInfo;
+import com.fitness.application.gym.set.SetsDTO;
 import com.fitness.application.gym.workout.entity.Workout;
 import com.fitness.application.gym.workout.entity.WorkoutExercise;
 import com.fitness.application.gym.workout.repository.WorkoutExerciseRepository;
@@ -55,9 +50,9 @@ public class WorkoutService {
 
     private final SetMapper setMapper;
 
-    public SliceDTO<WorkoutDTO> getWorkoutSlice(UUID uuid, Pageable pageable){
+    public SliceDTO<WorkoutsDTO.Workout> getWorkoutSlice(UUID uuid, Pageable pageable){
         Slice<Workout> workout = workoutRepository.findAllByCreatedByUuid(uuid, pageable);
-        return new SliceDTO<WorkoutDTO>(
+        return new SliceDTO<WorkoutsDTO.Workout>(
             workout.getContent()
                 .stream()
                     .map(workoutMapper::toSimpleWorkoutDTO)
@@ -67,10 +62,10 @@ public class WorkoutService {
         );
     }
 
-    public PageDTO<WorkoutDTO> getAllWorkouts(User user, Pageable pageable){
+    public PageDTO<WorkoutsDTO.Workout> getAllWorkouts(User user, Pageable pageable){
         Page<Workout> workout = workoutRepository.findAllByCreatedByUuid(user.getUuid(), pageable);
         log.info(workout.toString());
-        return new PageDTO<WorkoutDTO>(
+        return new PageDTO<WorkoutsDTO.Workout>(
             workout.getContent()
                 .stream()
                     .map(workoutMapper::toSimpleWorkoutDTO)
@@ -81,7 +76,7 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutDTO startWorkout(User user) {
+    public WorkoutsDTO.Workout startWorkout(User user) {
         Workout workout = Workout.builder()
                                 .status(Workout.Status.IN_PROGRESS)
                                 .createdBy(user)
@@ -91,7 +86,7 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutDTO completeWorkout(Long workoutId, User user) {
+    public WorkoutsDTO.Workout completeWorkout(Long workoutId, User user) {
         Workout workout = getWorkoutOrThrow(workoutId);
         if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
             throw new RuntimeException("Cannot stop workout: workout belongs to another user.");
@@ -102,7 +97,7 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutExerciseDTO addExerciseToWorkout(Long wId, Long exId, ExerciseAddDTO dto, User user) {
+    public WorkoutsDTO.WorkoutExercise addExerciseToWorkout(Long wId, Long exId, WorkoutsDTO.AddExercise dto, User user) {
         Workout workout = getWorkoutOrThrow(wId);
         if (!isAuthor(workout.getCreatedBy().getUuid(),user)) {
             throw new RuntimeException("Cannot add exercise: workout belongs to another user.");
@@ -121,17 +116,17 @@ public class WorkoutService {
     }
 
     @Transactional
-    public SetDTO addSetToWorkoutExercise(Long weId, CreateSetDTO dto, User user) {
+    public SetsDTO.Set addSetToWorkoutExercise(Long weId, SetsDTO.Create dto, User user) {
         WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         if (!isAuthor(workoutExercise.getCreatedBy().getUuid(),user)) {
             throw new RuntimeException("Cannot add set: workout belongs to another user.");
         }
         WorkoutSet set = WorkoutSet.builder()
                                 .workoutExercise(workoutExercise)
-                                .weight(dto.getWeight())
-                                .setNumber(dto.getSetNumber())
-                                .reps(dto.getReps())
-                                .rpe(dto.getRpe())
+                                .weight(dto.weight())
+                                .setNumber(dto.setNumber())
+                                .reps(dto.reps())
+                                .rpe(dto.rpe())
                                 .createdBy(user)
                                 .build();
         workoutExercise.addSet(set);
@@ -160,7 +155,7 @@ public class WorkoutService {
         workoutExerciseRepository.saveAndFlush(workoutExercise);
     }
 
-    public WorkoutInfo getWorkoutInfo(Long wId){
+    public WorkoutsDTO.Info getWorkoutInfo(Long wId){
         Workout workout = getWorkoutOrThrow(wId);
         return workoutMapper.toWorkoutInfo(workout);
     }
@@ -180,7 +175,7 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutInfo createWorkoutByPlan(long plan_id, long workout_id, User user){
+    public WorkoutsDTO.Info createWorkoutByPlan(long plan_id, long workout_id, User user){
         WorkoutPlan workoutPlan = planService.getWorkoutPlanOrThrow(plan_id);
         Workout workout = getWorkoutOrThrow(workout_id);
         List<PlanExercise> exercises = workoutPlan.getExercises();

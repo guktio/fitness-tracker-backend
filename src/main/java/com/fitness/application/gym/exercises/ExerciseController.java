@@ -17,9 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fitness.application.base.dto.PageDTO;
-import com.fitness.application.gym.exercises.dto.CreateExerciseDTO;
-import com.fitness.application.gym.exercises.dto.ExerciseDTO;
-import com.fitness.application.gym.exercises.dto.muscles.MuscleDTO;
+import com.fitness.application.gym.exercises.dto.ExercisesDTO;
+import com.fitness.application.gym.exercises.dto.MusclesDTO;
 import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.entity.User;
@@ -36,27 +35,27 @@ public class ExerciseController {
     private final ExerciseService exerciseService;
 
     @PostMapping("/exercise")
-    public ResponseEntity<ExerciseDTO> createExercise(@RequestBody CreateExerciseDTO exercise, @CurrentUser User user) {
-        log.info("POST /api/gym/exercise - Creating exercise with name: {} for user: {}", exercise.getName(), user.getUuid());
-        ExerciseDTO response = exerciseService.createExercise(exercise, user);
+    public ResponseEntity<ExercisesDTO.Exercise> createExercise(@RequestBody ExercisesDTO.CreateExercise exercise, @CurrentUser User user) {
+        log.info("POST /api/gym/exercise - Creating exercise with name: {} for user: {}", exercise.name(), user.getUuid());
+        ExercisesDTO.Exercise response = exerciseService.createExercise(exercise, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/exercise/{id}")
-    public ResponseEntity<ExerciseDTO> getExerciseById(@PathVariable Long id) {
+    public ResponseEntity<ExercisesDTO.Exercise> getExerciseById(@PathVariable Long id) {
         log.info("GET /api/gym/exercise/{} - Fetch exercise by id: {}", id, id);
-        ExerciseDTO response = exerciseService.getExerciseById(id);
+        ExercisesDTO.Exercise response = exerciseService.getExerciseById(id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/exercise")
-    public ResponseEntity<PageDTO<ExerciseDTO>> getAllExercises(
+    public ResponseEntity<PageDTO<ExercisesDTO.Exercise>> getAllExercises(
         Pageable pageable,
         @RequestParam(required = false) String muscle,
         @RequestParam(required = false) UUID createdBy
     ) {
         log.info("GET /api/gym/exercise - Fetching all exercises");
-        PageDTO<ExerciseDTO> response = exerciseService.getExerciseByFilter(muscle, pageable, createdBy);
+        PageDTO<ExercisesDTO.Exercise> response = exerciseService.getExerciseByFilter(muscle, pageable, createdBy);
         return ResponseEntity.ok(response);
     }
 
@@ -68,8 +67,8 @@ public class ExerciseController {
     }
 
     @GetMapping("/exercise/muscle")
-    public ResponseEntity<Map<Muscle.Category, List<MuscleDTO>>> getMuscles() {
-        Map<Muscle.Category, List<MuscleDTO>> response = exerciseService.getGroupedMuscles();
+    public ResponseEntity<Map<Muscle.Category, List<MusclesDTO.Muscle>>> getMuscles() {
+        Map<Muscle.Category, List<MusclesDTO.Muscle>> response = exerciseService.getGroupedMuscles();
         return ResponseEntity.ok(response);
     }
 }
