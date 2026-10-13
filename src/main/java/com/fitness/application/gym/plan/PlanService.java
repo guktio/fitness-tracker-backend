@@ -1,5 +1,7 @@
 package com.fitness.application.gym.plan;
 
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +35,18 @@ public class PlanService {
                 .orElseThrow(() -> new EntityNotFoundException("WorkoutPlan with id:"+id+" not found"));
     }
 
+    @Cacheable(
+        value = "plan",
+        key = "#id"
+    )
     public PlansDTO.Plan getWorkoutPlanDTO(Long id){
         return planMapper.toWorkoutPlanDTO(getWorkoutPlanOrThrow(id));
     }
 
+    @Cacheable(
+        value = "plan",
+        key = "#id"
+    )
     public PlansDTO.Plan createWorkoutPlan(PlansDTO.CreatePlan dto){
         WorkoutPlan workoutPlan = planMapper.toEntity(dto);
         WorkoutPlan saved = planRepository.save(workoutPlan);
@@ -44,6 +54,10 @@ public class PlanService {
     }
     
     @Transactional
+    @CachePut(
+        value = "plan",
+        key = "#id"
+    )
     public PlansDTO.Plan addExerciseToPlan(long pid, long eid, int orderNum, User user){
         WorkoutPlan plan = getWorkoutPlanOrThrow(pid);
         Exercise exercise = exerciseService.getExerciseOrThrow(eid);

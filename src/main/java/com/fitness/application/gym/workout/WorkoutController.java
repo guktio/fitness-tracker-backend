@@ -23,7 +23,6 @@ import com.fitness.application.users.UserService;
 import com.fitness.application.users.entity.User;
 
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController

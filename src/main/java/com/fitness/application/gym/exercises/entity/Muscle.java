@@ -1,9 +1,5 @@
 package com.fitness.application.gym.exercises.entity;
 
-import java.util.Locale;
-
-import org.springframework.context.MessageSource;
-
 import lombok.Getter;
 
 @Getter
@@ -69,12 +65,5 @@ public enum Muscle {
             this.code = code;
         }
 
-        public String getLocalizedName(MessageSource messageSource, Locale locale) {
-            return messageSource.getMessage(this.code, null, locale);
-        }
-    }
-
-    public String getLocalizedName(MessageSource messageSource, Locale locale) {
-        return messageSource.getMessage(this.code, null, locale);
     }
 }

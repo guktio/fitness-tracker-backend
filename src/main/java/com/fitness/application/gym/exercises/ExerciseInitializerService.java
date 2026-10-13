@@ -56,7 +56,7 @@ public class ExerciseInitializerService {
     }
 
     private ExercisesDTO.MuscleImpact impact(Muscle muscle, Integer level) {
-        return new ExercisesDTO.MuscleImpact(muscle.name(), null, level);
+        return new ExercisesDTO.MuscleImpact(muscle.getCode(), level);
     }
 
     // 1. Barbell Flat Bench Press

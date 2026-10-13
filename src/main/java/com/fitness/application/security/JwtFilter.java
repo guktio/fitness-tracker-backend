@@ -8,7 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.fitness.application.users.UserRepository;
+import com.fitness.application.users.UserService;
+import com.fitness.application.users.entity.User;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,10 +25,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
-        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         String token = extractToken(request.getHeader("Authorization"));
@@ -41,12 +42,12 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtService.validateJwt(token)) {
                 String uuid = jwtService.extractUuid(token);
 
-                userRepository.findById(UUID.fromString(uuid)).ifPresent(user -> {
-                    UserDetailsImpl userDetails = new UserDetailsImpl(user);
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                });
+                User user = userService.getByUuidOrThrow(UUID.fromString(uuid));
+
+                UserDetailsImpl details = new UserDetailsImpl(user);
+                UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
                 log.warn("Invalid JWT token");
             }

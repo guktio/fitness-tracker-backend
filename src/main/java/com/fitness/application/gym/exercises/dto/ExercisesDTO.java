@@ -35,7 +35,6 @@ public final class ExercisesDTO {
     @Builder
     public record MuscleImpact(
             String code,
-            String name,
             Integer impactLevel
     ) {}
 

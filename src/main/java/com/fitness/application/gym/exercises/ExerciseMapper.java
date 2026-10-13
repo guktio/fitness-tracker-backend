@@ -5,13 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.fitness.application.gym.exercises.dto.ExercisesDTO;
@@ -26,8 +23,6 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class ExerciseMapper {
-
-    private final MessageSource messageSource;
 
     public ExercisesDTO.Exercise toDTO(Exercise exercise) {
         return ExercisesDTO.Exercise.builder()
@@ -49,22 +44,12 @@ public class ExerciseMapper {
             return Collections.emptySet();
         }
 
-        Locale currentLocale = LocaleContextHolder.getLocale();
-
         return impacts.stream()
                 .map(impact -> {
                     Muscle muscle = impact.getMuscle();
 
-                    String localizedName = messageSource.getMessage(
-                        muscle.getCode(), 
-                        null, 
-                        muscle.name(), 
-                        currentLocale
-                    );
-
                     return ExercisesDTO.MuscleImpact.builder()
                             .code(muscle.name())
-                            .name(localizedName)
                             .impactLevel(impact.getImpactPercentage())
                             .build();
                 })
@@ -107,12 +92,11 @@ public class ExerciseMapper {
     }
 
     public Map<Muscle.Category,List<MusclesDTO.Muscle>> getGroupedMuscles() {
-        Locale currentLocale = LocaleContextHolder.getLocale();
         return Arrays.stream(Muscle.values())
                         .collect(Collectors.groupingBy(
                             m -> m.getCategory(),
                             Collectors.mapping(m -> (
-                                MusclesDTO.Muscle.builder().code(m.name()).name(messageSource.getMessage(m.getCode(), null,m.name(), currentLocale)).build())
+                                MusclesDTO.Muscle.builder().code(m.getCode()).build())
                                 , Collectors.toList())));   
     }
 }

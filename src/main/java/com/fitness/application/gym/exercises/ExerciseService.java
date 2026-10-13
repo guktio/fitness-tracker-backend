@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,10 +34,7 @@ public class ExerciseService {
     private final ExerciseMapper exerciseMapper;
 
     @Transactional
-    @Cacheable(
-        value = "exercise",
-        key = "#id"
-    )
+    @CachePut(value = "exercise", key = "#result.id")
     public ExercisesDTO.Exercise createExercise(ExercisesDTO.CreateExercise dto, User user) {
         log.debug("createExercise with ExercisesDTO: {} & User: {}", dto.toString(), user.toString());
         Exercise exercise = exerciseMapper.toEntity(dto);
@@ -48,10 +46,10 @@ public class ExerciseService {
     @Transactional(readOnly = true)
     @Cacheable(
         value = "exercise",
-        key = "#id + ':' + T(org.springframework.context.i18n.LocaleContextHolder).getLocale()"
+        key = "#id"
     )
     public ExercisesDTO.Exercise getExerciseById(Long id) {
-        log.debug("getExerciseById with id: {} & Locale: {}", id);
+        log.debug("getExerciseById with id: {}", id);
         return exerciseMapper.toDTO(getExerciseOrThrow(id));
     }
 

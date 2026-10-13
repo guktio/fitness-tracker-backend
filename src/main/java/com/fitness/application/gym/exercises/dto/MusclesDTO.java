@@ -17,7 +17,6 @@ public final class MusclesDTO {
 
     @Builder 
     public record Muscle (
-        String code,
-        String name
+        String code
     ) {}
 }

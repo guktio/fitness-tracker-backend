@@ -109,7 +109,7 @@ public class UserService implements UserDetailsService{
         return user;
     }
 
-    private User getByUuidOrThrow(UUID uuid){
+    public User getByUuidOrThrow(UUID uuid){
         return userRepository.findById(uuid).orElseThrow(() -> 
                 new EntityNotFoundException("User with uuid:"+ uuid +" was not found")
             );
