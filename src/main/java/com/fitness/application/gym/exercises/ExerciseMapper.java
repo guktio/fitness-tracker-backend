@@ -84,7 +84,7 @@ public class ExerciseMapper {
                 .filter(dto -> dto != null && dto.code() != null)
                 .map(dto -> {
                     return MuscleImpact.builder()
-                            .muscle(Muscle.valueOf(dto.code()))
+                            .muscle(Muscle.fromCode(dto.code()))
                             .impactPercentage(dto.impactLevel())
                             .build();
                 })
