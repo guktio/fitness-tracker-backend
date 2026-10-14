@@ -1,5 +1,6 @@
 package com.fitness.application.gym.plan;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.fitness.application.gym.exercises.dto.ExercisesDTO;
@@ -17,9 +18,8 @@ public final class PlansDTO {
     public  record PlanExercise(
         Long id, 
         Integer orderNum, 
-        ExercisesDTO.Exercise exercise,
-        Plan plan
-    ) {}
+        ExercisesDTO.Exercise exercise
+    ) implements  Serializable {}
 
     @Builder 
     public record Plan(
@@ -27,5 +27,5 @@ public final class PlansDTO {
         String title,
         String description,
         List<PlansDTO.PlanExercise> exercises
-    ) {}
+    ) implements  Serializable {}
 }

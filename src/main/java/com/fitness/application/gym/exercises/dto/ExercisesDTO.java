@@ -1,5 +1,6 @@
 package com.fitness.application.gym.exercises.dto;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public final class ExercisesDTO {
             ExerciseMuscle muscleGroup,
             String username,
             UUID userUuid
-    ) {}
+    ) implements  Serializable {}
 
     public record CreateExercise(
             String name,

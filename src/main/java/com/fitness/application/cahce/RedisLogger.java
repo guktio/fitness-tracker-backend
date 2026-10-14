@@ -1,4 +1,4 @@
-package com.fitness.application.redis;
+package com.fitness.application.cahce;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

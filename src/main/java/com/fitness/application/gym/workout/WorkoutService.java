@@ -3,6 +3,9 @@ package com.fitness.application.gym.workout;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -76,6 +79,7 @@ public class WorkoutService {
     }
 
     @Transactional
+    @CachePut(value = "workout", key = "#result.id")
     public WorkoutsDTO.Workout startWorkout(User user) {
         Workout workout = Workout.builder()
                                 .status(Workout.Status.IN_PROGRESS)
@@ -86,6 +90,7 @@ public class WorkoutService {
     }
 
     @Transactional
+    @CachePut(value = "workout", key = "#result.id")
     public WorkoutsDTO.Workout completeWorkout(Long workoutId, User user) {
         Workout workout = getWorkoutOrThrow(workoutId);
         if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
@@ -97,6 +102,7 @@ public class WorkoutService {
     }
 
     @Transactional
+    @CachePut(value = "workoutExercise", key = "#result.id")
     public WorkoutsDTO.WorkoutExercise addExerciseToWorkout(Long wId, Long exId, WorkoutsDTO.AddExercise dto, User user) {
         Workout workout = getWorkoutOrThrow(wId);
         if (!isAuthor(workout.getCreatedBy().getUuid(),user)) {
@@ -116,6 +122,7 @@ public class WorkoutService {
     }
 
     @Transactional
+    @CachePut(value = "workoutSet", key = "#result.id")
     public SetsDTO.Set addSetToWorkoutExercise(Long weId, SetsDTO.Create dto, User user) {
         WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         if (!isAuthor(workoutExercise.getCreatedBy().getUuid(),user)) {
@@ -135,6 +142,7 @@ public class WorkoutService {
     }
 
     @Transactional
+    @CacheEvict(value = "workoutExercise", key = "#exId")
     public void deleteExerciseFromWorkout(Long wId, Long exId, User user){
         Workout workout = getWorkoutOrThrow(wId);
         if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
@@ -147,6 +155,7 @@ public class WorkoutService {
     }
 
     @Transactional
+    @CacheEvict(value = "workoutSet", key = "#sId")
     public void deleteSetFromExercise(Long weId, Long sId, User user){
         WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         WorkoutSet set = setRepository.findById(sId)

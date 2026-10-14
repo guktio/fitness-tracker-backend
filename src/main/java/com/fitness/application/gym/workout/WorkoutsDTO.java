@@ -1,5 +1,6 @@
 package com.fitness.application.gym.workout;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.fitness.application.gym.set.SetsDTO;
@@ -16,7 +17,7 @@ public final class WorkoutsDTO {
         Long id,
         Status status,
         String createdAt
-    ) {}
+    ) implements  Serializable {}
     
     @Builder 
     public record WorkoutExercise(
@@ -24,7 +25,7 @@ public final class WorkoutsDTO {
         Integer orderNum,
         String exerciseName,
         List<SetsDTO.Set> sets
-    ) {}
+    ) implements  Serializable {}
 
     public record AddExercise(
         Integer orderNum 
@@ -36,5 +37,5 @@ public final class WorkoutsDTO {
         Status status,
         List<WorkoutExercise> exercises,
         String createdAt
-    ) {}
+    ) implements Serializable {}
 }

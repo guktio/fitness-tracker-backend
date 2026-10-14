@@ -1,5 +1,7 @@
 package com.fitness.application.gym.set;
 
+import java.io.Serializable;
+
 import lombok.Builder;
 
 public final class SetsDTO {
@@ -21,5 +23,5 @@ public final class SetsDTO {
         Double weight,
         Integer reps,
         Double rpe
-    ) {}
+    ) implements Serializable {}
 }

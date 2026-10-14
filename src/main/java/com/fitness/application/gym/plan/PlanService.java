@@ -43,9 +43,9 @@ public class PlanService {
         return planMapper.toWorkoutPlanDTO(getWorkoutPlanOrThrow(id));
     }
 
-    @Cacheable(
+    @CachePut(
         value = "plan",
-        key = "#id"
+        key = "#result.id"
     )
     public PlansDTO.Plan createWorkoutPlan(PlansDTO.CreatePlan dto){
         WorkoutPlan workoutPlan = planMapper.toEntity(dto);
@@ -56,7 +56,7 @@ public class PlanService {
     @Transactional
     @CachePut(
         value = "plan",
-        key = "#id"
+        key = "#result.id"
     )
     public PlansDTO.Plan addExerciseToPlan(long pid, long eid, int orderNum, User user){
         WorkoutPlan plan = getWorkoutPlanOrThrow(pid);
