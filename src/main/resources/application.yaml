@@ -9,3 +9,10 @@ springdoc:
     path: /api
   swagger-ui:
     path: /docs
+  
+spring:
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+  repositories:
+    enabled: false

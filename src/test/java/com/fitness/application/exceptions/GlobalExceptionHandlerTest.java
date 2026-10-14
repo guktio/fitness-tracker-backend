@@ -50,7 +50,7 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Access denied", response.getBody().get("error"));
+        assertEquals("Access Denied", response.getBody().get("error"));
         assertEquals("Forbidden action", response.getBody().get("message"));
     }
 
@@ -68,7 +68,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleEntityExistsException_shouldReturn400() {
-        EntityExistsException ex = new EntityExistsException("Already exists");
+        EntityExistsException ex = new EntityExistsException("Entity already exists");
 
         ResponseEntity<Map<String, String>> response = exceptionHandler.handleEntityExistsException(ex);
 

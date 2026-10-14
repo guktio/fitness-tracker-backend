@@ -22,8 +22,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 import com.fitness.application.base.dto.PageDTO;
+import com.fitness.application.base.dto.SliceDTO;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.plan.PlanService;
@@ -31,13 +34,8 @@ import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.gym.set.SetMapper;
 import com.fitness.application.gym.set.SetRepository;
+import com.fitness.application.gym.set.SetsDTO;
 import com.fitness.application.gym.set.WorkoutSet;
-import com.fitness.application.gym.set.dto.CreateSetDTO;
-import com.fitness.application.gym.set.dto.SetDTO;
-import com.fitness.application.gym.workout.DTO.ExerciseAddDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutExerciseDTO;
-import com.fitness.application.gym.workout.DTO.WorkoutInfo;
 import com.fitness.application.gym.workout.entity.Workout;
 import com.fitness.application.gym.workout.entity.WorkoutExercise;
 import com.fitness.application.gym.workout.repository.WorkoutExerciseRepository;
@@ -76,7 +74,7 @@ class WorkoutServiceTest {
     private User user;
     private User otherUser;
     private Workout workout;
-    private WorkoutDTO workoutDTO;
+    private WorkoutsDTO.Workout workoutDTO;
 
     @BeforeEach
     void setUp() {
@@ -97,32 +95,26 @@ class WorkoutServiceTest {
                 .exercises(new ArrayList<>())
                 .build();
 
-        workoutDTO = WorkoutDTO.builder()
+        workoutDTO = WorkoutsDTO.Workout.builder()
                 .id(1L)
                 .status(Workout.Status.IN_PROGRESS)
                 .build();
     }
 
-    // @Test
-    // void getWorkoutSlice_shouldReturnSliceDTO() {
-    //     Pageable pageable = PageRequest.of(0, 10);
-    //     Slice<Workout> slice = new SliceImpl<>(List.of(workout), pageable, false);
+    @Test
+    void getWorkoutSlice_shouldReturnSliceDTO() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Workout> page = new PageImpl<>(List.of(workout), pageable, 1);
 
-    //     when(workoutRepository.findAllByCreatedByUuid(user.getUuid(), pageable)).thenReturn(slice);
-    //     when(workoutMapper.toSimpleWorkoutDTO(workout)).thenReturn(workoutDTO);
+        when(workoutRepository.findAllByCreatedByUuid(user.getUuid(), pageable)).thenReturn(page);
+        when(workoutMapper.toSimpleWorkoutDTO(workout)).thenReturn(workoutDTO);
 
-    //     SliceDTO<WorkoutDTO> result = workoutService.getWorkoutSlice(user.getUuid(), pageable);
+        SliceDTO<WorkoutsDTO.Workout> result = workoutService.getWorkoutSlice(user.getUuid(), pageable);
 
-    //     assertNotNull(result);
-    //     assertEquals(1, result.getContent().size());
-    //     assertEquals(0, result.getCurrentPage());
-    // }
-
-    // @Test
-    // void getAllWorkouts_whenUserIsNull_shouldThrowUserNotFoundException() {
-    //     Pageable pageable = PageRequest.of(0, 10);
-    //     assertThrows(UserNotFoundException.class, () -> workoutService.getAllWorkouts(null, pageable));
-    // }
+        assertNotNull(result);
+        assertEquals(1, result.items().size());
+        assertEquals(0, result.pageNumber());
+    }
 
     @Test
     void getAllWorkouts_whenUserIsValid_shouldReturnPageDTO() {
@@ -132,7 +124,7 @@ class WorkoutServiceTest {
         when(workoutRepository.findAllByCreatedByUuid(user.getUuid(), pageable)).thenReturn(page);
         when(workoutMapper.toSimpleWorkoutDTO(workout)).thenReturn(workoutDTO);
 
-        PageDTO<WorkoutDTO> result = workoutService.getAllWorkouts(user, pageable);
+        PageDTO<WorkoutsDTO.Workout> result = workoutService.getAllWorkouts(user, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.content().size());
@@ -145,10 +137,10 @@ class WorkoutServiceTest {
         when(workoutRepository.save(any(Workout.class))).thenReturn(workout);
         when(workoutMapper.toSimpleWorkoutDTO(workout)).thenReturn(workoutDTO);
 
-        WorkoutDTO result = workoutService.startWorkout(user);
+        WorkoutsDTO.Workout result = workoutService.startWorkout(user);
 
         assertNotNull(result);
-        assertEquals(Workout.Status.IN_PROGRESS, result.getStatus());
+        assertEquals(Workout.Status.IN_PROGRESS, result.status());
         verify(workoutRepository).save(any(Workout.class));
     }
 
@@ -157,10 +149,13 @@ class WorkoutServiceTest {
         when(workoutRepository.findWorkoutById(1L)).thenReturn(Optional.of(workout));
         when(workoutRepository.save(workout)).thenReturn(workout);
 
-        WorkoutDTO completedDTO = WorkoutDTO.builder().id(1L).status(Workout.Status.COMPLETED).build();
+        WorkoutsDTO.Workout completedDTO = WorkoutsDTO.Workout.builder()
+                .id(1L)
+                .status(Workout.Status.COMPLETED)
+                .build();
         when(workoutMapper.toSimpleWorkoutDTO(workout)).thenReturn(completedDTO);
 
-        WorkoutDTO result = workoutService.completeWorkout(1L, user);
+        WorkoutsDTO.Workout result = workoutService.completeWorkout(1L, user);
 
         assertNotNull(result);
         assertEquals(Workout.Status.COMPLETED, workout.getStatus());
@@ -184,7 +179,7 @@ class WorkoutServiceTest {
     @Test
     void addExerciseToWorkout_whenAuthor_shouldAddExercise() {
         Exercise exercise = Exercise.builder().id(5L).name("Squat").build();
-        ExerciseAddDTO addDTO = new ExerciseAddDTO(1);
+        WorkoutsDTO.AddExercise addDTO = new WorkoutsDTO.AddExercise(1);
         WorkoutExercise workoutExercise = WorkoutExercise.builder()
                 .id(10L)
                 .orderNum(1)
@@ -192,23 +187,27 @@ class WorkoutServiceTest {
                 .exercise(exercise)
                 .createdBy(user)
                 .build();
-        WorkoutExerciseDTO weDTO = WorkoutExerciseDTO.builder().id(10L).orderNum(1).build();
+        WorkoutsDTO.WorkoutExercise weDTO = WorkoutsDTO.WorkoutExercise.builder()
+                .id(10L)
+                .orderNum(1)
+                .exerciseName("Squat")
+                .build();
 
         when(workoutRepository.findWorkoutById(1L)).thenReturn(Optional.of(workout));
         when(exerciseService.getExerciseOrThrow(5L)).thenReturn(exercise);
         when(workoutExerciseRepository.saveAndFlush(any(WorkoutExercise.class))).thenReturn(workoutExercise);
         when(workoutMapper.toWorkoutExerciseDTO(workoutExercise)).thenReturn(weDTO);
 
-        WorkoutExerciseDTO result = workoutService.addExerciseToWorkout(1L, 5L, addDTO, user);
+        WorkoutsDTO.WorkoutExercise result = workoutService.addExerciseToWorkout(1L, 5L, addDTO, user);
 
         assertNotNull(result);
-        assertEquals(10L, result.getId());
+        assertEquals(10L, result.id());
         verify(workoutExerciseRepository).saveAndFlush(any(WorkoutExercise.class));
     }
 
     @Test
     void addExerciseToWorkout_whenNotAuthor_shouldThrowRuntimeException() {
-        ExerciseAddDTO addDTO = new ExerciseAddDTO(1);
+        WorkoutsDTO.AddExercise addDTO = new WorkoutsDTO.AddExercise(1);
         when(workoutRepository.findWorkoutById(1L)).thenReturn(Optional.of(workout));
 
         assertThrows(RuntimeException.class, () -> workoutService.addExerciseToWorkout(1L, 5L, addDTO, otherUser));
@@ -223,7 +222,7 @@ class WorkoutServiceTest {
                 .sets(new ArrayList<>())
                 .build();
 
-        CreateSetDTO setToAdd = CreateSetDTO.builder()
+        SetsDTO.Create setToAdd = SetsDTO.Create.builder()
                 .weight(100.0)
                 .setNumber(1)
                 .reps(10)
@@ -240,7 +239,7 @@ class WorkoutServiceTest {
                 .workoutExercise(workoutExercise)
                 .build();
 
-        SetDTO setDTO = SetDTO.builder()
+        SetsDTO.Set setDTO = SetsDTO.Set.builder()
                 .id(20L)
                 .weight(100.0)
                 .setNumber(1)
@@ -252,10 +251,10 @@ class WorkoutServiceTest {
         when(setRepository.saveAndFlush(any(WorkoutSet.class))).thenReturn(savedSet);
         when(setMapper.toSetDTO(savedSet)).thenReturn(setDTO);
 
-        SetDTO result = workoutService.addSetToWorkoutExercise(10L, setToAdd, user);
+        SetsDTO.Set result = workoutService.addSetToWorkoutExercise(10L, setToAdd, user);
 
         assertNotNull(result);
-        assertEquals(20L, result.getId());
+        assertEquals(20L, result.id());
         verify(setRepository).saveAndFlush(any(WorkoutSet.class));
     }
 
@@ -268,7 +267,7 @@ class WorkoutServiceTest {
                 .sets(new ArrayList<>())
                 .build();
 
-        CreateSetDTO setToAdd = CreateSetDTO.builder()
+        SetsDTO.Create setToAdd = SetsDTO.Create.builder()
                 .weight(100.0)
                 .setNumber(1)
                 .reps(10)
@@ -322,14 +321,14 @@ class WorkoutServiceTest {
 
     @Test
     void getWorkoutInfo_shouldReturnWorkoutInfo() {
-        WorkoutInfo info = WorkoutInfo.builder().id(1L).build();
+        WorkoutsDTO.Info info = WorkoutsDTO.Info.builder().id(1L).build();
         when(workoutRepository.findWorkoutById(1L)).thenReturn(Optional.of(workout));
         when(workoutMapper.toWorkoutInfo(workout)).thenReturn(info);
 
-        WorkoutInfo result = workoutService.getWorkoutInfo(1L);
+        WorkoutsDTO.Info result = workoutService.getWorkoutInfo(1L);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
+        assertEquals(1L, result.id());
     }
 
     @Test
@@ -346,18 +345,17 @@ class WorkoutServiceTest {
                 .exercises(List.of(planExercise))
                 .build();
 
-        WorkoutInfo info = WorkoutInfo.builder().id(1L).build();
+        WorkoutsDTO.Info info = WorkoutsDTO.Info.builder().id(1L).build();
 
         when(planService.getWorkoutPlanOrThrow(50L)).thenReturn(plan);
         when(workoutRepository.findWorkoutById(1L)).thenReturn(Optional.of(workout));
         when(workoutRepository.save(workout)).thenReturn(workout);
         when(workoutMapper.toWorkoutInfo(workout)).thenReturn(info);
 
-        WorkoutInfo result = workoutService.createWorkoutByPlan(50L, 1L, user);
+        WorkoutsDTO.Info result = workoutService.createWorkoutByPlan(50L, 1L, user);
 
         assertNotNull(result);
         assertEquals(1, workout.getExercises().size());
         verify(workoutRepository).save(workout);
     }
 }
-

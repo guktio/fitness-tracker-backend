@@ -6,9 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.fitness.application.gym.exercises.ExerciseMapper;
-import com.fitness.application.gym.plan.dto.CreatePlanDTO;
-import com.fitness.application.gym.plan.dto.PlanExerciseDTO;
-import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 
@@ -20,8 +17,8 @@ public class PlanMapper {
 
     private final ExerciseMapper exerciseMapper;
 
-    public WorkoutPlanDTO toWorkoutPlanDTO(WorkoutPlan workoutPlan) {
-        return WorkoutPlanDTO.builder()
+    public PlansDTO.Plan toWorkoutPlanDTO(WorkoutPlan workoutPlan) {
+        return PlansDTO.Plan.builder()
                 .id(workoutPlan.getId())
                 .title(workoutPlan.getTitle())
                 .description(workoutPlan.getDescription())
@@ -29,7 +26,7 @@ public class PlanMapper {
                 .build();
     }
 
-    public List<PlanExerciseDTO> toPlanExerciseDTO(List<PlanExercise> exercises) {
+    public List<PlansDTO.PlanExercise> toPlanExerciseDTO(List<PlanExercise> exercises) {
         if (exercises == null) {
             return List.of();
         }
@@ -38,18 +35,18 @@ public class PlanMapper {
                 .collect(Collectors.toList());
     }
 
-    public PlanExerciseDTO toPlanExerciseDTO(PlanExercise pe) {
-        return PlanExerciseDTO.builder()
+    public PlansDTO.PlanExercise toPlanExerciseDTO(PlanExercise pe) {
+        return PlansDTO.PlanExercise.builder()
                 .id(pe.getId())
                 .orderNum(pe.getOrderNum())
                 .exercise(exerciseMapper.toDTO(pe.getExercise()))
                 .build();
     }
 
-    public WorkoutPlan toEntity(CreatePlanDTO dto) {
+    public WorkoutPlan toEntity(PlansDTO.CreatePlan dto) {
         return WorkoutPlan.builder()
-                        .title(dto.getTitle())
-                        .description(dto.getDescription())
+                        .title(dto.title())
+                        .description(dto.description())
                         .build();
     }
 }

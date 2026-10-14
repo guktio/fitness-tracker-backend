@@ -1,12 +1,12 @@
 package com.fitness.application.gym.plan;
 
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
-import com.fitness.application.gym.plan.dto.CreatePlanDTO;
-import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.gym.plan.repository.PlanExerciseRepository;
@@ -35,18 +35,30 @@ public class PlanService {
                 .orElseThrow(() -> new EntityNotFoundException("WorkoutPlan with id:"+id+" not found"));
     }
 
-    public WorkoutPlanDTO getWorkoutPlanDTO(Long id){
+    @Cacheable(
+        value = "plan",
+        key = "#id"
+    )
+    public PlansDTO.Plan getWorkoutPlanDTO(Long id){
         return planMapper.toWorkoutPlanDTO(getWorkoutPlanOrThrow(id));
     }
 
-    public WorkoutPlanDTO createWorkoutPlan(CreatePlanDTO dto){
+    @CachePut(
+        value = "plan",
+        key = "#result.id"
+    )
+    public PlansDTO.Plan createWorkoutPlan(PlansDTO.CreatePlan dto){
         WorkoutPlan workoutPlan = planMapper.toEntity(dto);
         WorkoutPlan saved = planRepository.save(workoutPlan);
         return planMapper.toWorkoutPlanDTO(saved);
     }
     
     @Transactional
-    public WorkoutPlanDTO addExerciseToPlan(long pid, long eid, int orderNum, User user){
+    @CachePut(
+        value = "plan",
+        key = "#result.id"
+    )
+    public PlansDTO.Plan addExerciseToPlan(long pid, long eid, int orderNum, User user){
         WorkoutPlan plan = getWorkoutPlanOrThrow(pid);
         Exercise exercise = exerciseService.getExerciseOrThrow(eid);
         PlanExercise pExercise = PlanExercise.builder()

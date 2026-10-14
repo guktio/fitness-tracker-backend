@@ -1,10 +1,10 @@
 package com.fitness.application.gym.exercises.entity;
 
-import java.util.Locale;
-
-import org.springframework.context.MessageSource;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+
+import java.util.Arrays;
 
 @Getter
 public enum Muscle {
@@ -52,6 +52,22 @@ public enum Muscle {
         this.category = category;
     }
 
+    @JsonValue
+    public String getCode() {
+        return code;
+    }
+
+    @JsonCreator
+    public static Muscle fromCode(String code) {
+        if (code == null) {
+            return null;
+        }
+        return Arrays.stream(Muscle.values())
+                .filter(muscle -> muscle.code.equalsIgnoreCase(code))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown muscle code: " + code));
+    }
+
     @Getter
     public enum Category {
         SHOULDERS("category.shoulders"),
@@ -69,12 +85,20 @@ public enum Muscle {
             this.code = code;
         }
 
-        public String getLocalizedName(MessageSource messageSource, Locale locale) {
-            return messageSource.getMessage(this.code, null, locale);
+        @JsonValue
+        public String getCode() {
+            return code;
         }
-    }
 
-    public String getLocalizedName(MessageSource messageSource, Locale locale) {
-        return messageSource.getMessage(this.code, null, locale);
+        @JsonCreator
+        public static Category fromCode(String code) {
+            if (code == null) {
+                return null;
+            }
+            return Arrays.stream(Category.values())
+                    .filter(category -> category.code.equalsIgnoreCase(code))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown category code: " + code));
+        }
     }
 }

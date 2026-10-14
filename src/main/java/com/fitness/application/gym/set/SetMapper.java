@@ -2,13 +2,11 @@ package com.fitness.application.gym.set;
 
 import org.springframework.stereotype.Service;
 
-import com.fitness.application.gym.set.dto.SetDTO;
-
 @Service 
 public class SetMapper {
 
-    public SetDTO toSetDTO(WorkoutSet s) {
-        return SetDTO.builder()
+    public SetsDTO.Set toSetDTO(WorkoutSet s) {
+        return SetsDTO.Set.builder()
                 .id(s.getId())
                 .setNumber(s.getSetNumber())
                 .weight(s.getWeight())

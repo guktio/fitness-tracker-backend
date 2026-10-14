@@ -63,6 +63,7 @@ public class User extends BaseEntity {
     private Set<Roles> roles;
 
     @Builder.Default
+    @Column(name = "deleted", nullable = false, columnDefinition = "boolean default false")
     private boolean deleted = false;
 
     @Column(name = "deleted_on")

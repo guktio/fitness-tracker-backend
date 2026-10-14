@@ -24,13 +24,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import com.fitness.application.base.dto.PageDTO;
-import com.fitness.application.gym.exercises.dto.CreateExerciseDTO;
-import com.fitness.application.gym.exercises.dto.ExerciseDTO;
-import com.fitness.application.gym.exercises.dto.muscles.MuscleDTO;
+import com.fitness.application.gym.exercises.dto.ExercisesDTO;
+import com.fitness.application.gym.exercises.dto.MusclesDTO;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.exercises.entity.Muscle;
 import com.fitness.application.gym.exercises.repository.ExerciseRepository;
 import com.fitness.application.users.entity.User;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class ExerciseServiceTest {
@@ -45,7 +46,7 @@ class ExerciseServiceTest {
     private ExerciseService exerciseService;
 
     private Exercise exercise;
-    private ExerciseDTO exerciseDTO;
+    private ExercisesDTO.Exercise exerciseDTO;
     private User user;
 
     @BeforeEach
@@ -61,26 +62,25 @@ class ExerciseServiceTest {
                 .createdBy(user)
                 .build();
 
-        exerciseDTO = ExerciseDTO.builder()
+        exerciseDTO = ExercisesDTO.Exercise.builder()
                 .id(1L)
                 .name("Bench Press")
+                .description("Sample description")
                 .build();
     }
 
     @Test
     void createExercise_shouldSaveAndReturnDto() {
-        CreateExerciseDTO createDTO = CreateExerciseDTO.builder()
-                .name("Bench Press")
-                .build();
+        ExercisesDTO.CreateExercise createDTO = new ExercisesDTO.CreateExercise("Bench Press", "Sample description", null);
 
         when(exerciseMapper.toEntity(createDTO)).thenReturn(exercise);
         when(exerciseRepository.save(exercise)).thenReturn(exercise);
         when(exerciseMapper.toDTO(exercise)).thenReturn(exerciseDTO);
 
-        ExerciseDTO result = exerciseService.createExercise(createDTO, user);
+        ExercisesDTO.Exercise result = exerciseService.createExercise(createDTO, user);
 
         assertNotNull(result);
-        assertEquals("Bench Press", result.getName());
+        assertEquals("Bench Press", result.name());
         assertEquals(user, exercise.getCreatedBy());
         verify(exerciseRepository).save(exercise);
     }
@@ -90,17 +90,17 @@ class ExerciseServiceTest {
         when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
         when(exerciseMapper.toDTO(exercise)).thenReturn(exerciseDTO);
 
-        ExerciseDTO result = exerciseService.getExerciseById(1L);
+        ExercisesDTO.Exercise result = exerciseService.getExerciseById(1L);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
+        assertEquals(1L, result.id());
     }
 
     @Test
-    void getExerciseById_whenNotFound_shouldThrowRuntimeException() {
+    void getExerciseById_whenNotFound_shouldThrowEntityNotFoundException() {
         when(exerciseRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> exerciseService.getExerciseById(999L));
+        assertThrows(EntityNotFoundException.class, () -> exerciseService.getExerciseById(999L));
     }
 
     @Test
@@ -114,10 +114,10 @@ class ExerciseServiceTest {
     }
 
     @Test
-    void getExerciseOrThrow_whenNotFound_shouldThrowRuntimeException() {
+    void getExerciseOrThrow_whenNotFound_shouldThrowEntityNotFoundException() {
         when(exerciseRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> exerciseService.getExerciseOrThrow(999L));
+        assertThrows(EntityNotFoundException.class, () -> exerciseService.getExerciseOrThrow(999L));
     }
 
     @Test
@@ -128,7 +128,7 @@ class ExerciseServiceTest {
         when(exerciseRepository.findAll(pageable)).thenReturn(page);
         when(exerciseMapper.toDTO(exercise)).thenReturn(exerciseDTO);
 
-        PageDTO<ExerciseDTO> result = exerciseService.getAllExercises(pageable);
+        PageDTO<ExercisesDTO.Exercise> result = exerciseService.getAllExercises(pageable);
 
         assertNotNull(result);
         assertEquals(1, result.content().size());
@@ -145,12 +145,12 @@ class ExerciseServiceTest {
 
     @Test
     void getGroupedMuscles_shouldReturnMap() {
-        Map<Muscle.Category, List<MuscleDTO>> musclesMap = Map.of(
-                Muscle.Category.CHEST, List.of()
+        Map<Muscle.Category, List<MusclesDTO.Muscle>> musclesMap = Map.of(
+                Muscle.Category.CHEST, List.of(MusclesDTO.Muscle.builder().code("CHEST").build())
         );
         when(exerciseMapper.getGroupedMuscles()).thenReturn(musclesMap);
 
-        Map<Muscle.Category, List<MuscleDTO>> result = exerciseService.getGroupedMuscles();
+        Map<Muscle.Category, List<MusclesDTO.Muscle>> result = exerciseService.getGroupedMuscles();
 
         assertNotNull(result);
         assertEquals(musclesMap, result);
@@ -165,7 +165,7 @@ class ExerciseServiceTest {
                 .thenReturn(page);
         when(exerciseMapper.toDTO(exercise)).thenReturn(exerciseDTO);
 
-        PageDTO<ExerciseDTO> result = exerciseService.getExerciseByFilter(
+        PageDTO<ExercisesDTO.Exercise> result = exerciseService.getExerciseByFilter(
                 "PECTORALIS_MAJOR_CLAVICULAR", pageable, user.getUuid());
 
         assertNotNull(result);
@@ -181,10 +181,9 @@ class ExerciseServiceTest {
                 .thenReturn(page);
         when(exerciseMapper.toDTO(exercise)).thenReturn(exerciseDTO);
 
-        PageDTO<ExerciseDTO> result = exerciseService.getExerciseByFilter(null, pageable, user.getUuid());
+        PageDTO<ExercisesDTO.Exercise> result = exerciseService.getExerciseByFilter(null, pageable, user.getUuid());
 
         assertNotNull(result);
         assertEquals(1, result.content().size());
     }
 }
-

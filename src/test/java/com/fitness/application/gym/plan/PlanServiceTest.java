@@ -19,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
-import com.fitness.application.gym.plan.dto.WorkoutPlanDTO;
 import com.fitness.application.gym.plan.entity.PlanExercise;
 import com.fitness.application.gym.plan.entity.WorkoutPlan;
 import com.fitness.application.gym.plan.repository.PlanExerciseRepository;
@@ -47,7 +46,7 @@ class PlanServiceTest {
     private PlanService planService;
 
     private WorkoutPlan plan;
-    private WorkoutPlanDTO planDTO;
+    private PlansDTO.Plan planDTO;
     private Exercise exercise;
     private User user;
 
@@ -60,7 +59,7 @@ class PlanServiceTest {
                 .exercises(new ArrayList<>())
                 .build();
 
-        planDTO = WorkoutPlanDTO.builder()
+        planDTO = PlansDTO.Plan.builder()
                 .id(1L)
                 .title("Full Body Plan")
                 .description("Sample plan")
@@ -99,24 +98,26 @@ class PlanServiceTest {
         when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
         when(planMapper.toWorkoutPlanDTO(plan)).thenReturn(planDTO);
 
-        WorkoutPlanDTO result = planService.getWorkoutPlanDTO(1L);
+        PlansDTO.Plan result = planService.getWorkoutPlanDTO(1L);
 
         assertNotNull(result);
-        assertEquals("Full Body Plan", result.getTitle());
+        assertEquals("Full Body Plan", result.title());
     }
 
-    //TODO: Change test for CreateWorkoutPlanDTO support
-    // @Test
-    // void createWorkoutPlan_shouldSaveAndReturnDto() {
-    //     when(planRepository.save(plan)).thenReturn(plan);
-    //     when(planMapper.toWorkoutPlanDTO(plan)).thenReturn(planDTO);
+    @Test
+    void createWorkoutPlan_shouldSaveAndReturnDto() {
+        PlansDTO.CreatePlan createDTO = new PlansDTO.CreatePlan("Full Body Plan", "Sample plan");
 
-    //     WorkoutPlanDTO result = planService.createWorkoutPlan(plan);
+        when(planMapper.toEntity(createDTO)).thenReturn(plan);
+        when(planRepository.save(plan)).thenReturn(plan);
+        when(planMapper.toWorkoutPlanDTO(plan)).thenReturn(planDTO);
 
-    //     assertNotNull(result);
-    //     assertEquals("Full Body Plan", result.getTitle());
-    //     verify(planRepository).save(plan);
-    // }
+        PlansDTO.Plan result = planService.createWorkoutPlan(createDTO);
+
+        assertNotNull(result);
+        assertEquals("Full Body Plan", result.title());
+        verify(planRepository).save(plan);
+    }
 
     @Test
     void addExerciseToPlan_shouldAddExerciseAndReturnUpdatedDto() {
@@ -125,7 +126,7 @@ class PlanServiceTest {
         when(planRepository.save(plan)).thenReturn(plan);
         when(planMapper.toWorkoutPlanDTO(plan)).thenReturn(planDTO);
 
-        WorkoutPlanDTO result = planService.addExerciseToPlan(1L, 10L, 1, user);
+        PlansDTO.Plan result = planService.addExerciseToPlan(1L, 10L, 1, user);
 
         assertNotNull(result);
         assertEquals(1, plan.getExercises().size());
@@ -133,4 +134,3 @@ class PlanServiceTest {
         verify(planRepository).save(plan);
     }
 }
-
