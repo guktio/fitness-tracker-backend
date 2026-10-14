@@ -2,135 +2,208 @@
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Build-Gradle-02303A?logo=gradle&logoColor=white)
 ![JWT](https://img.shields.io/badge/Auth-JWT-black?logo=jsonwebtokens&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-73%20passed-brightgreen?logo=github-actions&logoColor=white)
+![OpenAPI](https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?logo=swagger&logoColor=black)
 
-# Gym Tracker
+# Gym Tracker API
 
-A REST API backend for tracking gym workouts. Users can log sessions, add exercises with detailed muscle-group information, record sets (weight / reps / RPE), build reusable workout plans, and browse a shared exercise catalog. The service is secured with JWT and supports role-based access control (`USER`, `MODERATOR`, `ADMIN`).
+A high-performance RESTful API backend for tracking workouts, managing custom exercises with anatomical muscle taxonomies, building reusable training plans, and logging live gym sessions in real time.
+
+Powered by **Java 21**, **Spring Boot**, **PostgreSQL**, and **Redis** for distributed caching with fail-safe error handling.
+
+---
 
 ## Table of Contents
 
-- [Features](#toc-features)
-- [API Endpoints](#toc-api-endpoints)
-  - [Authentication](#toc-authentication)
-  - [Users](#toc-users)
-  - [Workouts & Tracking](#toc-workouts-tracking)
-  - [Exercises & Muscle Directory](#toc-exercises-muscle-directory)
-  - [Workout Plans](#toc-workout-plans)
-- [Try in Postman](#toc-postman)
-- [Default Credentials](#toc-default-credentials)
-- [Local Development](#toc-local-development)
-- [Running Tests](#toc-running-tests)
-- [Docker Deployment](#toc-docker-deployment)
-  - [Prerequisites](#toc-prerequisites)
-  - [Environment Variables](#toc-environment-variables)
-  - [Quick Start (Docker CLI)](#toc-quick-start-cli)
-  - [Quick Start (Docker Compose)](#toc-quick-start-compose)
-  - [Notes](#toc-notes)
+- [Core Abilities & Features](#core-abilities--features)
+- [Architecture & Tech Stack](#architecture--tech-stack)
+- [Redis Caching Architecture](#redis-caching-architecture)
+- [API Endpoints & Routes](#api-endpoints--routes)
+  - [Cache Legend](#cache-legend)
+  - [Authentication & Health](#authentication--health)
+  - [Users Management](#users-management)
+  - [Exercises & Muscle Catalog](#exercises--muscle-catalog)
+  - [Workout Plans](#workout-plans)
+  - [Live Workouts & Session Tracking](#live-workouts--session-tracking)
+- [API Documentation (Swagger UI)](#api-documentation-swagger-ui)
+- [Try in Postman](#try-in-postman)
+- [Default Admin Credentials](#default-admin-credentials)
+- [Local Development](#local-development)
+  - [H2 In-Memory Profile](#h2-in-memory-profile)
+  - [PostgreSQL & Redis Profile](#postgresql--redis-profile)
+  - [Running Tests](#running-tests)
+- [Docker Deployment](#docker-deployment)
+  - [Environment Variables](#environment-variables)
+  - [Docker Compose (Postgres + Redis + App)](#docker-compose-postgres--redis--app)
 
 ---
 
-<a id="toc-features"></a>
-## Features
+## Core Abilities & Features
 
-- User registration & login with JWT tokens
-- Role-based access control (`USER`, `MODERATOR`, `ADMIN`)
-- Start / complete gym sessions and track exercises set-by-set (weight, reps, RPE)
-- Create reusable **workout plans** and apply them to a live session instantly
-- Custom exercises with detailed multi-muscle mapping and anatomical categories
-- Paginated workout history per user
-- Soft-delete for user accounts
-- Multi-language muscle names
-- Auto-created admin account on first startup
-
----
-
-<a id="toc-api-endpoints"></a>
-## API Endpoints
-
-<a id="toc-authentication"></a>
-### Authentication
-
-| Method | Path | Description | Auth |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register a new user account | Public |
-| `POST` | `/api/auth/login` | Authenticate and receive a JWT access token | Public |
-| `GET` | `/api/auth/whoami` | Get profile of the currently authenticated user | Required |
-| `GET` | `/api/auth/isAlive` | Service health check | Public |
+- **Security & Authorization**:
+  - Stateless authentication using **JWT** (HMAC-SHA256).
+  - Role-Based Access Control (**RBAC**) with `USER`, `MODERATOR`, and `ADMIN` roles.
+  - Automatic superuser bootstrapping on initial startup (`admin@example.com`).
+  - Soft-delete support for user accounts preserving historical integrity.
+- **Exercise Directory & Muscle Anatomy**:
+  - Rich catalog of built-in compound and isolated movements seeded on boot.
+  - Granular muscle engagement tracking classified into **Primary**, **Secondary**, and **Stabilizing** muscle groups.
+  - Anatomical muscle categorization (Chest, Back, Arms, Legs, Core, etc.).
+- **Reusable Workout Plans**:
+  - Design multi-exercise templates with custom ordering.
+  - Instant one-click instantiation of an entire workout session from a saved plan.
+- **Live Workout Session Tracking**:
+  - Active session state management (`IN_PROGRESS` $\rightarrow$ `COMPLETED`).
+  - Granular set logging: records **Weight**, **Reps**, and **RPE** (Rate of Perceived Exertion).
+  - Add, reorder, or delete exercises and sets dynamically during live training.
+  - Paginated history and user-specific workout slices.
+- **Distributed Redis Caching**:
+  - Sub-millisecond response times on frequent reads (exercise details, plans, active sessions).
+  - Isolated cache namespaces with dedicated serialization and TTLs.
+  - Non-blocking failover: if Redis is unreachable, the system transparently falls back to PostgreSQL without failing requests.
 
 ---
 
-<a id="toc-users"></a>
-### Users
+## Architecture & Tech Stack
 
-| Method | Path | Description | Auth |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/users/` | Paginated list of all users | Required |
-| `POST` | `/api/users` | Create a new user | Required |
-| `GET` | `/api/users/{uuid}` | Get user by UUID | Required |
-| `PUT` | `/api/users/{uuid}` | Update user profile | Required |
-| `DELETE` | `/api/users/{uuid}` | Soft-delete user account | Required |
-| `GET` | `/api/users/check/username` | Check username availability (`?username=`) | Public |
-| `GET` | `/api/users/check/email` | Check email availability (`?email=`) | Public |
-
----
-
-<a id="toc-workouts-tracking"></a>
-### Workouts & Tracking
-
-| Method | Path | Description | Auth |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/gym/workouts/my` | Paginated list of the current user's workouts | Required |
-| `GET` | `/api/gym/user/workout/{uuid}` | Paginated workout history for a specific user | Required |
-| `POST` | `/api/gym/workout/start` | Start a new workout session | Required |
-| `POST` | `/api/gym/workout/{id}/complete` | Complete and finalize the active workout | Required |
-| `GET` | `/api/gym/workout/{id}` | Get full workout details (exercises + sets) | Required |
-| `POST` | `/api/gym/workout/{workoutId}/exercise/{exerciseId}` | Add an exercise to a workout | Required |
-| `DELETE` | `/api/gym/workout/{wId}/exercise/{exId}` | Remove an exercise from a workout | Required |
-| `POST` | `/api/gym/workout/exercise/{workoutExerciseId}/set` | Log a set (weight, reps, RPE) | Required |
-| `DELETE` | `/api/gym/workout/exercise/{workoutExerciseId}/set/{setId}` | Delete a logged set | Required |
-| `POST` | `/api/gym/workout/{wid}/plan/{pid}` | Populate a workout from a saved plan | Required |
+- **Runtime & Language**: Java 21 LTS
+- **Framework**: Spring Boot 4.1 (`webmvc`, `security`, `data-jpa`, `cache`, `actuator`)
+- **Primary Database**: PostgreSQL (Production / Dev) / H2 (Testing / In-memory dev)
+- **Cache Engine**: Redis (via `spring-boot-starter-data-redis` & Spring Cache)
+- **Object-Relational Mapping**: Hibernate ORM & JPA
+- **Database Migrations & Auditing**: Flyway, Spring Data JPA Auditing
+- **Documentation**: SpringDoc OpenAPI 3 / Swagger UI
+- **Build Tool**: Gradle (Kotlin DSL)
+- **Containerization**: Docker & Docker Compose
 
 ---
 
-<a id="toc-exercises-muscle-directory"></a>
-### Exercises & Muscle Directory
+## Redis Caching Architecture
 
-| Method | Path | Description | Auth |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/gym/exercise` | Paginated exercise catalog | Required |
-| `POST` | `/api/gym/exercise` | Create a custom exercise with muscle mapping | Required |
-| `GET` | `/api/gym/exercise/{id}` | Get exercise details by ID | Required |
-| `DELETE` | `/api/gym/exercise/{id}` | Delete an exercise | Required |
-| `GET` | `/api/gym/exercise/muscle` | Full muscle taxonomy with anatomical categories | Required |
+The application uses **Redis** as a distributed second-level cache managed through Spring Cache abstraction. Each cache namespace is tuned with a custom Time-To-Live (TTL) and typed JSON serialization:
+
+| Cache Name | Entity / DTO Type | Default TTL | Description |
+| :--- | :--- | :---: | :--- |
+| `exercise` | `ExercisesDTO.Exercise` | 30 minutes | Exercise details and anatomical muscle impact |
+| `plan` | `PlansDTO.Plan` | 30 minutes | Reusable workout plan templates |
+| `workout` | `WorkoutsDTO.Workout` | 60 minutes | High-level workout session state (`IN_PROGRESS` / `COMPLETED`) |
+| `workoutExercise` | `WorkoutsDTO.WorkoutExercise` | 30 minutes | Exercises added to an active workout |
+| `workoutSet` | `SetsDTO.Set` | 30 minutes | Individual logged sets (weight, reps, RPE) |
+| `workoutInfo` | `WorkoutsDTO.Info` | 30 minutes | Detailed composite workout view |
+
+### Fail-Safe Cache Resilience
+Implemented via `CacheConfig` with a custom `CacheErrorHandler`. If Redis goes offline or encounters a connection error, cache misses/errors are logged as warnings and queries proceed directly to PostgreSQL, ensuring **zero downtime** for client requests.
 
 ---
 
-<a id="toc-workout-plans"></a>
+## API Endpoints & Routes
+
+### Cache Legend
+
+- ⚡ **Cached (Read)**: Served directly from Redis if present; falls back to DB on miss (`@Cacheable`).
+- 💾 **Cache Update**: Result is saved or updated in Redis immediately upon execution (`@CachePut`).
+- 🗑️ **Cache Eviction**: Related entries are removed from Redis to prevent stale data (`@CacheEvict`).
+- `—` **Direct DB / Stateless**: Queries database directly or performs cryptographic/stateless validation.
+
+---
+
+### Authentication & Health
+
+Base path: `/api/auth`
+
+| Method | Route | Description | Auth | Cache Behavior |
+| :--- | :--- | :--- | :---: | :---: |
+| `POST` | `/api/auth/register` | Register a new user account | Public | `—` |
+| `POST` | `/api/auth/login` | Authenticate with email/password and obtain JWT | Public | `—` |
+| `GET` | `/api/auth/whoami` | Retrieve profile of the authenticated caller | Required | `—` |
+| `GET` | `/api/auth/isAlive` | Health check endpoint | Public | `—` |
+
+---
+
+### Users Management
+
+Base path: `/api/users`
+
+| Method | Route | Description | Auth | Cache Behavior |
+| :--- | :--- | :--- | :---: | :---: |
+| `GET` | `/api/users/` | Paginated list of all users | `ADMIN` | `—` |
+| `POST` | `/api/users` | Create user with explicit role assignment | `ADMIN` | `—` |
+| `GET` | `/api/users/{uuid}` | Fetch user profile by UUID | Required | `—` |
+| `PUT` | `/api/users/{uuid}` | Update user username or email | Owner / Admin | `—` |
+| `DELETE` | `/api/users/{uuid}` | Soft-delete user account | Owner / Admin | `—` |
+| `GET` | `/api/users/check/username` | Check username availability (`?username=`) | Public | `—` |
+| `GET` | `/api/users/check/email` | Check email availability (`?email=`) | Public | `—` |
+
+---
+
+### Exercises & Muscle Catalog
+
+Base path: `/api/gym`
+
+| Method | Route | Description | Auth | Cache Behavior |
+| :--- | :--- | :--- | :---: | :---: |
+| `GET` | `/api/gym/exercise/{id}` | Get full exercise details by ID | Required | ⚡ **Cached (Read)** (`exercise`) |
+| `POST` | `/api/gym/exercise` | Create a custom exercise with muscle impact | Required | 💾 **Cache Update** (`exercise`) |
+| `DELETE` | `/api/gym/exercise/{id}` | Delete an exercise | Required | 🗑️ **Cache Eviction** (`exercise`) |
+| `GET` | `/api/gym/exercise` | Paginated catalog (`?muscle=`, `?createdBy=`) | Required | `—` |
+| `GET` | `/api/gym/exercise/muscle` | Grouped anatomical muscle taxonomy | Required | `—` |
+
+---
+
 ### Workout Plans
 
-| Method | Path | Description | Auth |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/gym/workout/plan/{id}` | Get a workout plan by ID | Required |
-| `POST` | `/api/gym/workout/plan` | Create a new workout plan | Required |
-| `POST` | `/api/gym/workout/plan/{pid}/exercise/{eid}` | Add an exercise to a plan (`?orderNum=`) | Required |
+Base path: `/api/gym`
+
+| Method | Route | Description | Auth | Cache Behavior |
+| :--- | :--- | :--- | :---: | :---: |
+| `GET` | `/api/gym/workout/plan/{id}` | Retrieve workout plan by ID | Required | ⚡ **Cached (Read)** (`plan`) |
+| `POST` | `/api/gym/workout/plan` | Create a new workout plan template | Required | 💾 **Cache Update** (`plan`) |
+| `POST` | `/api/gym/workout/plan/{pid}/exercise/{eid}` | Add an exercise to a plan (`?orderNum=`) | Required | 💾 **Cache Update** (`plan`) |
 
 ---
 
-<a id="toc-postman"></a>
+### Live Workouts & Session Tracking
+
+Base path: `/api/gym`
+
+| Method | Route | Description | Auth | Cache Behavior |
+| :--- | :--- | :--- | :---: | :---: |
+| `POST` | `/api/gym/workout/start` | Start a new live workout (`IN_PROGRESS`) | Required | 💾 **Cache Update** (`workout`) |
+| `POST` | `/api/gym/workout/{id}/complete` | Mark active workout as `COMPLETED` | Required | 💾 **Cache Update** (`workout`) |
+| `GET` | `/api/gym/workout/{id}` | Get complete workout info (exercises + sets) | Required | `—` |
+| `POST` | `/api/gym/workout/{wid}/plan/{pid}` | Instantiate workout from a saved plan | Required | `—` |
+| `POST` | `/api/gym/workout/{wId}/exercise/{exId}` | Add exercise to live workout session | Required | 💾 **Cache Update** (`workoutExercise`) |
+| `DELETE` | `/api/gym/workout/{wId}/exercise/{exId}` | Remove exercise from workout session | Required | 🗑️ **Cache Eviction** (`workoutExercise`) |
+| `POST` | `/api/gym/workout/exercise/{weId}/set` | Log a completed set (weight, reps, RPE) | Required | 💾 **Cache Update** (`workoutSet`) |
+| `DELETE` | `/api/gym/workout/exercise/{weId}/set/{sId}` | Remove a logged set | Required | 🗑️ **Cache Eviction** (`workoutSet`) |
+| `GET` | `/api/gym/workouts/my` | Paginated history of caller's workouts | Required | `—` |
+| `GET` | `/api/gym/user/workout/{uuid}` | Paginated workout slice for a given user | Required | `—` |
+
+---
+
+## API Documentation (Swagger UI)
+
+Interactive OpenAPI / Swagger documentation is available once the service is running:
+
+- **Swagger UI**: [http://localhost:8080/docs](http://localhost:8080/docs)
+- **OpenAPI JSON Spec**: [http://localhost:8080/api](http://localhost:8080/api)
+
+---
+
 ## Try in Postman
+
+Fork the official Postman collection to start testing all endpoints immediately:
 
 [<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/44209970-18191787-8fb8-4ba5-920a-2c30f07ed8c7?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D44209970-18191787-8fb8-4ba5-920a-2c30f07ed8c7%26entityType%3Dcollection%26workspaceId%3Ddb45adf4-03c5-4eff-94db-3fdd13e09359)
 
 ---
 
-<a id="toc-default-credentials"></a>
-## Default Credentials
+## Default Admin Credentials
 
-An admin account is created automatically on first startup:
+A default superuser is provisioned automatically on first startup:
 
 | Field | Value |
 | :--- | :--- |
@@ -140,154 +213,70 @@ An admin account is created automatically on first startup:
 
 ---
 
-<a id="toc-local-development"></a>
 ## Local Development
 
-### H2 (no external database needed)
+### H2 In-Memory Profile
+Runs completely standalone without external dependencies:
 
 ```bash
 ./gradlew bootRun --args='--spring.profiles.active=h2'
 ```
+H2 Web Console: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 
-The H2 console is available at `http://localhost:8080/h2-console`.
-
-### PostgreSQL (dev profile)
-
-Set the required environment variables, then:
+### PostgreSQL & Redis Profile
+Make sure PostgreSQL and Redis instances are running, export environment variables, and run:
 
 ```bash
-export DB_URL=jdbc:postgresql://localhost:5432/gym_db
-export SPRING_DATASOURCE_USERNAME=postgres
-export SPRING_DATASOURCE_PASSWORD=yourpassword
-export SECRET_KEY=your-very-long-jwt-secret-key-at-least-256-bits
-./gradlew bootRun
+export DB_URL="jdbc:postgresql://localhost:5432/fitapp"
+export SPRING_DATASOURCE_USERNAME="fitapp"
+export SPRING_DATASOURCE_PASSWORD="yourpassword"
+export REDIS_URL="redis://localhost:6379"
+export SECRET_KEY="your-super-secret-key-that-must-be-at-least-32-bytes-long!"
+
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
----
-
-<a id="toc-running-tests"></a>
-## Running Tests
-
-Tests use an in-memory H2 database and require no external services:
+### Running Tests
+Unit and integration tests run against an in-memory database:
 
 ```bash
 ./gradlew test
 ```
-
-Test report is generated at `build/reports/tests/test/index.html`.
+HTML test report is generated at `build/reports/tests/test/index.html`.
 
 ---
 
-<a id="toc-docker-deployment"></a>
 ## Docker Deployment
 
-<a id="toc-prerequisites"></a>
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
-- A running PostgreSQL instance (or use Docker Compose — it starts one automatically)
-
----
-
-<a id="toc-environment-variables"></a>
 ### Environment Variables
 
-| Variable | Description | Example |
+| Variable | Description | Default / Example |
 | :--- | :--- | :--- |
-| `DB_URL` | PostgreSQL JDBC connection URL | `jdbc:postgresql://postgres:5432/gym_db` |
-| `SPRING_DATASOURCE_USERNAME` | Database user | `postgres` |
-| `SPRING_DATASOURCE_PASSWORD` | Database password | `yourpassword` |
-| `SECRET_KEY` | JWT signing secret (≥ 256-bit / 32 chars) | `change-me-to-a-long-random-string` |
+| `DB_URL` | PostgreSQL JDBC connection URL | `jdbc:postgresql://postgres:5432/fitapp` |
+| `SPRING_DATASOURCE_USERNAME` | Database username | `fitapp` |
+| `SPRING_DATASOURCE_PASSWORD` | Database password | `1234` |
+| `REDIS_URL` | Redis connection URI | `redis://redis:6379` |
+| `SECRET_KEY` | JWT signing secret key ($\ge$ 256 bits) | `your-super-secret-key-at-least-32-bytes!` |
 
----
+### Docker Compose (Postgres + Redis + App)
 
-<a id="toc-quick-start-cli"></a>
-### Quick Start (Docker CLI)
+The repository provides a complete `compose.yaml` orchestrating PostgreSQL, Redis, and the Spring Boot application:
 
-1. **Build the image**
-   ```bash
-   docker build -t gym-tracker-api .
-   ```
-2. **Run**
-   ```bash
-   docker run -d \
-     --name gym-tracker \
-     -p 8080:8080 \
-     -e DB_URL="jdbc:postgresql://host.docker.internal:5432/gym_db" \
-     -e SPRING_DATASOURCE_USERNAME="postgres" \
-     -e SPRING_DATASOURCE_PASSWORD="yourpassword" \
-     -e SECRET_KEY="your-very-long-jwt-secret-key" \
-     gym-tracker-api
-   ```
+```bash
+# 1. Start all services in foreground
+docker compose up --build
 
----
+# 2. Start in background (detached)
+docker compose up --build -d
 
-<a id="toc-quick-start-compose"></a>
-### Quick Start (Docker Compose)
+# 3. Stop all services
+docker compose down
 
-No local PostgreSQL instance needed — `docker-compose.yml` spins up the database and the API together.
-
-1. **Start everything**
-   ```bash
-   docker compose up --build
-   ```
-2. **Run in the background**
-   ```bash
-   docker compose up --build -d
-   ```
-3. **Stop**
-   ```bash
-   docker compose down
-   ```
-   Add `-v` to also wipe the database volume.
-
-`docker-compose.yml`:
-```yaml
-services:
-  postgres:
-    image: 'postgres:latest'
-    container_name: gym-tracker-postgres
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=gym_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=yourpassword
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d gym_db']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: gym-tracker-api
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      - DB_URL=jdbc:postgresql://postgres:5432/gym_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=yourpassword
-      - SECRET_KEY=your-very-long-jwt-secret-key
-    ports:
-      - '8080:8080'
-
-volumes:
-  postgres_data:
+# 4. Stop and remove volumes (clean wipe)
+docker compose down -v
 ```
 
----
-
-<a id="toc-notes"></a>
-### Notes
-
-- Change `POSTGRES_PASSWORD`, `SPRING_DATASOURCE_PASSWORD`, and `SECRET_KEY` before deploying anywhere outside local development.
-- If port `5432` or `8080` is already in use, remap the left-hand side of the `ports` entry (e.g. `'15432:5432'`).
-- Database data persists in the `postgres_data` volume between restarts — run `docker compose down -v` to wipe it.
+Services started by Docker Compose:
+- **`app`**: Spring Boot API on port `8080`
+- **`postgres`**: PostgreSQL database on port `5432` with healthcheck
+- **`redis`**: Redis 8 cache on port `6379` with `redis-cli ping` healthcheck
