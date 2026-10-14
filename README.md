@@ -22,7 +22,6 @@ Powered by **Java 21**, **Spring Boot**, **PostgreSQL**, and **Redis** for distr
 - [Architecture & Tech Stack](#architecture--tech-stack)
 - [Redis Caching Architecture](#redis-caching-architecture)
 - [API Endpoints & Routes](#api-endpoints--routes)
-  - [Cache Legend](#cache-legend)
   - [Authentication & Health](#authentication--health)
   - [Users Management](#users-management)
   - [Exercises & Muscle Catalog](#exercises--muscle-catalog)
@@ -101,25 +100,16 @@ Implemented via `CacheConfig` with a custom `CacheErrorHandler`. If Redis goes o
 
 ## API Endpoints & Routes
 
-### Cache Legend
-
-- ⚡ **Cached (Read)**: Served directly from Redis if present; falls back to DB on miss (`@Cacheable`).
-- 💾 **Cache Update**: Result is saved or updated in Redis immediately upon execution (`@CachePut`).
-- 🗑️ **Cache Eviction**: Related entries are removed from Redis to prevent stale data (`@CacheEvict`).
-- `—` **Direct DB / Stateless**: Queries database directly or performs cryptographic/stateless validation.
-
----
-
 ### Authentication & Health
 
 Base path: `/api/auth`
 
-| Method | Route | Description | Auth | Cache Behavior |
-| :--- | :--- | :--- | :---: | :---: |
-| `POST` | `/api/auth/register` | Register a new user account | Public | `—` |
-| `POST` | `/api/auth/login` | Authenticate with email/password and obtain JWT | Public | `—` |
-| `GET` | `/api/auth/whoami` | Retrieve profile of the authenticated caller | Required | `—` |
-| `GET` | `/api/auth/isAlive` | Health check endpoint | Public | `—` |
+| Method | Route | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/api/auth/register` | Register a new user account | Public |
+| `POST` | `/api/auth/login` | Authenticate with email/password and obtain JWT | Public |
+| `GET` | `/api/auth/whoami` | Retrieve profile of the authenticated caller | Required |
+| `GET` | `/api/auth/isAlive` | Health check endpoint | Public |
 
 ---
 
@@ -127,15 +117,15 @@ Base path: `/api/auth`
 
 Base path: `/api/users`
 
-| Method | Route | Description | Auth | Cache Behavior |
-| :--- | :--- | :--- | :---: | :---: |
-| `GET` | `/api/users/` | Paginated list of all users | `ADMIN` | `—` |
-| `POST` | `/api/users` | Create user with explicit role assignment | `ADMIN` | `—` |
-| `GET` | `/api/users/{uuid}` | Fetch user profile by UUID | Required | `—` |
-| `PUT` | `/api/users/{uuid}` | Update user username or email | Owner / Admin | `—` |
-| `DELETE` | `/api/users/{uuid}` | Soft-delete user account | Owner / Admin | `—` |
-| `GET` | `/api/users/check/username` | Check username availability (`?username=`) | Public | `—` |
-| `GET` | `/api/users/check/email` | Check email availability (`?email=`) | Public | `—` |
+| Method | Route | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/users/` | Paginated list of all users | `ADMIN` |
+| `POST` | `/api/users` | Create user with explicit role assignment | `ADMIN` |
+| `GET` | `/api/users/{uuid}` | Fetch user profile by UUID | Required |
+| `PUT` | `/api/users/{uuid}` | Update user username or email | Owner / Admin |
+| `DELETE` | `/api/users/{uuid}` | Soft-delete user account | Owner / Admin |
+| `GET` | `/api/users/check/username` | Check username availability (`?username=`) | Public |
+| `GET` | `/api/users/check/email` | Check email availability (`?email=`) | Public |
 
 ---
 
@@ -143,13 +133,13 @@ Base path: `/api/users`
 
 Base path: `/api/gym`
 
-| Method | Route | Description | Auth | Cache Behavior |
-| :--- | :--- | :--- | :---: | :---: |
-| `GET` | `/api/gym/exercise/{id}` | Get full exercise details by ID | Required | ⚡ **Cached (Read)** (`exercise`) |
-| `POST` | `/api/gym/exercise` | Create a custom exercise with muscle impact | Required | 💾 **Cache Update** (`exercise`) |
-| `DELETE` | `/api/gym/exercise/{id}` | Delete an exercise | Required | 🗑️ **Cache Eviction** (`exercise`) |
-| `GET` | `/api/gym/exercise` | Paginated catalog (`?muscle=`, `?createdBy=`) | Required | `—` |
-| `GET` | `/api/gym/exercise/muscle` | Grouped anatomical muscle taxonomy | Required | `—` |
+| Method | Route | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/gym/exercise/{id}` | Get full exercise details by ID | Required |
+| `POST` | `/api/gym/exercise` | Create a custom exercise with muscle impact | Required |
+| `DELETE` | `/api/gym/exercise/{id}` | Delete an exercise | Required |
+| `GET` | `/api/gym/exercise` | Paginated catalog (`?muscle=`, `?createdBy=`) | Required |
+| `GET` | `/api/gym/exercise/muscle` | Grouped anatomical muscle taxonomy | Required |
 
 ---
 
@@ -157,11 +147,11 @@ Base path: `/api/gym`
 
 Base path: `/api/gym`
 
-| Method | Route | Description | Auth | Cache Behavior |
-| :--- | :--- | :--- | :---: | :---: |
-| `GET` | `/api/gym/workout/plan/{id}` | Retrieve workout plan by ID | Required | ⚡ **Cached (Read)** (`plan`) |
-| `POST` | `/api/gym/workout/plan` | Create a new workout plan template | Required | 💾 **Cache Update** (`plan`) |
-| `POST` | `/api/gym/workout/plan/{pid}/exercise/{eid}` | Add an exercise to a plan (`?orderNum=`) | Required | 💾 **Cache Update** (`plan`) |
+| Method | Route | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/gym/workout/plan/{id}` | Retrieve workout plan by ID | Required |
+| `POST` | `/api/gym/workout/plan` | Create a new workout plan template | Required |
+| `POST` | `/api/gym/workout/plan/{pid}/exercise/{eid}` | Add an exercise to a plan (`?orderNum=`) | Required |
 
 ---
 
@@ -169,18 +159,18 @@ Base path: `/api/gym`
 
 Base path: `/api/gym`
 
-| Method | Route | Description | Auth | Cache Behavior |
-| :--- | :--- | :--- | :---: | :---: |
-| `POST` | `/api/gym/workout/start` | Start a new live workout (`IN_PROGRESS`) | Required | 💾 **Cache Update** (`workout`) |
-| `POST` | `/api/gym/workout/{id}/complete` | Mark active workout as `COMPLETED` | Required | 💾 **Cache Update** (`workout`) |
-| `GET` | `/api/gym/workout/{id}` | Get complete workout info (exercises + sets) | Required | `—` |
-| `POST` | `/api/gym/workout/{wid}/plan/{pid}` | Instantiate workout from a saved plan | Required | `—` |
-| `POST` | `/api/gym/workout/{wId}/exercise/{exId}` | Add exercise to live workout session | Required | 💾 **Cache Update** (`workoutExercise`) |
-| `DELETE` | `/api/gym/workout/{wId}/exercise/{exId}` | Remove exercise from workout session | Required | 🗑️ **Cache Eviction** (`workoutExercise`) |
-| `POST` | `/api/gym/workout/exercise/{weId}/set` | Log a completed set (weight, reps, RPE) | Required | 💾 **Cache Update** (`workoutSet`) |
-| `DELETE` | `/api/gym/workout/exercise/{weId}/set/{sId}` | Remove a logged set | Required | 🗑️ **Cache Eviction** (`workoutSet`) |
-| `GET` | `/api/gym/workouts/my` | Paginated history of caller's workouts | Required | `—` |
-| `GET` | `/api/gym/user/workout/{uuid}` | Paginated workout slice for a given user | Required | `—` |
+| Method | Route | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/api/gym/workout/start` | Start a new live workout (`IN_PROGRESS`) | Required |
+| `POST` | `/api/gym/workout/{id}/complete` | Mark active workout as `COMPLETED` | Required |
+| `GET` | `/api/gym/workout/{id}` | Get complete workout info (exercises + sets) | Required |
+| `POST` | `/api/gym/workout/{wid}/plan/{pid}` | Instantiate workout from a saved plan | Required |
+| `POST` | `/api/gym/workout/{wId}/exercise/{exId}` | Add exercise to live workout session | Required |
+| `DELETE` | `/api/gym/workout/{wId}/exercise/{exId}` | Remove exercise from workout session | Required |
+| `POST` | `/api/gym/workout/exercise/{weId}/set` | Log a completed set (weight, reps, RPE) | Required |
+| `DELETE` | `/api/gym/workout/exercise/{weId}/set/{sId}` | Remove a logged set | Required |
+| `GET` | `/api/gym/workouts/my` | Paginated history of caller's workouts | Required |
+| `GET` | `/api/gym/user/workout/{uuid}` | Paginated workout slice for a given user | Required |
 
 ---
 
