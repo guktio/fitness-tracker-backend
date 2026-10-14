@@ -187,8 +187,7 @@ Interactive OpenAPI / Swagger documentation is available once the service is run
 
 Fork the official Postman collection to start testing all endpoints immediately:
 
-[<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/44209970-18191787-8fb8-4ba5-920a-2c30f07ed8c7?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D44209970-18191787-8fb8-4ba5-920a-2c30f07ed8c7%26entityType%3Dcollection%26workspaceId%3Ddb45adf4-03c5-4eff-94db-3fdd13e09359)
-
+[<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://god.gw.postman.com/run-collection/44209970-aef1a0a6-977a-4f22-851d-7c100c7109f9?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D44209970-aef1a0a6-977a-4f22-851d-7c100c7109f9%26entityType%3Dcollection%26workspaceId%3D674f32d8-83df-4c51-b8ae-1ce7f93a0a10#?env%5BPublic%5D=W3sia2V5IjoidG9rZW4iLCJ2YWx1ZSI6IiIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0Iiwic2VjcmV0Ijp0cnVlfSx7ImtleSI6ImJhc2VVcmwiLCJ2YWx1ZSI6IiIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJkZWZhdWx0In0seyJrZXkiOiJ1c2VyVXVpZCIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImFueSJ9LHsia2V5IjoiZXhlcmNpc2VJZCIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImFueSJ9LHsia2V5Ijoid29ya291dElkIiwidmFsdWUiOiIiLCJlbmFibGVkIjp0cnVlLCJ0eXBlIjoiYW55In0seyJrZXkiOiJ3b3Jrb3V0RXhlcmNpc2VJZCIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImFueSJ9LHsia2V5Ijoic2V0SWQiLCJ2YWx1ZSI6IiIsImVuYWJsZWQiOnRydWUsInR5cGUiOiJhbnkifSx7ImtleSI6Im15VXVpZCIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImFueSJ9LHsia2V5Ijoid29ya291dFBsYW5JZCIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImFueSJ9LHsia2V5Ijoib3RoZXJVc2VyVXVpZCIsInZhbHVlIjoiIiwiZW5hYmxlZCI6dHJ1ZSwidHlwZSI6ImFueSJ9XQ==)
 ---
 
 ## Default Admin Credentials
