@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.base.dto.SliceDTO;
 import com.fitness.application.exceptions.AccessDeniedException;
+import com.fitness.application.exceptions.WorkoutStateException;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.plan.PlanService;
@@ -25,6 +26,7 @@ import com.fitness.application.gym.set.SetRepository;
 import com.fitness.application.gym.set.SetsDTO;
 import com.fitness.application.gym.workout.entity.Workout;
 import com.fitness.application.gym.workout.entity.WorkoutExercise;
+import com.fitness.application.gym.workout.entity.Workout.Status;
 import com.fitness.application.gym.workout.repository.WorkoutExerciseRepository;
 import com.fitness.application.gym.workout.repository.WorkoutRepository;
 import com.fitness.application.users.entity.User;
@@ -108,7 +110,9 @@ public class WorkoutService {
         if (!isAuthor(workout.getCreatedBy().getUuid(),user)) {
             throw new AccessDeniedException("Cannot add exercise: workout belongs to another user.");
         }
-        
+        if (workout.getStatus() != Status.IN_PROGRESS) {
+            throw new WorkoutStateException("Cannot add exercise: workout stopped or not in progress.");
+        }
         Exercise exercise = exerciseService.getExerciseOrThrow(exId);
         WorkoutExercise workoutExercise = WorkoutExercise.builder()
                             .orderNum(dto.orderNum())
@@ -128,6 +132,9 @@ public class WorkoutService {
         if (!isAuthor(workoutExercise.getCreatedBy().getUuid(),user)) {
             throw new AccessDeniedException("Cannot add set: workout belongs to another user.");
         }
+        if (workoutExercise.getWorkout().getStatus() != Status.IN_PROGRESS) {
+            throw new WorkoutStateException("Cannot add set: workout stopped or not in progress.");
+        }
         WorkoutSet set = WorkoutSet.builder()
                                 .workoutExercise(workoutExercise)
                                 .weight(dto.weight())
@@ -146,7 +153,10 @@ public class WorkoutService {
     public void deleteExerciseFromWorkout(Long wId, Long exId, User user){
         Workout workout = getWorkoutOrThrow(wId);
         if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
-            throw new AccessDeniedException("Cannot : workout belongs to another user.");
+            throw new AccessDeniedException("Cannot delete exercise: workout belongs to another user.");
+        }
+        if (workout.getStatus() != Status.IN_PROGRESS) {
+            throw new WorkoutStateException("Cannot delete exercise: workout stopped or not in progress.");
         }
         WorkoutExercise workoutExercise = workoutExerciseRepository.findByWorkoutIdAndExerciseId(wId, exId)
                 .orElseThrow(() -> new EntityNotFoundException("Exercise with id:" + exId + " and workoutId:" + wId+ " not found"));
@@ -160,6 +170,9 @@ public class WorkoutService {
         WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         WorkoutSet set = setRepository.findById(sId)
                 .orElseThrow(() -> new EntityNotFoundException("Set with id:" + sId + " not found"));
+        if (workoutExercise.getWorkout().getStatus() != Status.IN_PROGRESS) {
+            throw new WorkoutStateException("Cannot delete set: workout stopped or not in progress.");
+        }
         workoutExercise.removeSet(set);
         workoutExerciseRepository.saveAndFlush(workoutExercise);
     }
