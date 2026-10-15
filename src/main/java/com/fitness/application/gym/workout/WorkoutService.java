@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -14,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.base.dto.SliceDTO;
+import com.fitness.application.exceptions.AccessDeniedException;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.plan.PlanService;
@@ -94,7 +94,7 @@ public class WorkoutService {
     public WorkoutsDTO.Workout completeWorkout(Long workoutId, User user) {
         Workout workout = getWorkoutOrThrow(workoutId);
         if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
-            throw new RuntimeException("Cannot stop workout: workout belongs to another user.");
+            throw new AccessDeniedException("Cannot stop workout: workout belongs to another user.");
         }
         workout.setStatus(Workout.Status.COMPLETED);
         Workout saved = workoutRepository.save(workout);
@@ -106,7 +106,7 @@ public class WorkoutService {
     public WorkoutsDTO.WorkoutExercise addExerciseToWorkout(Long wId, Long exId, WorkoutsDTO.AddExercise dto, User user) {
         Workout workout = getWorkoutOrThrow(wId);
         if (!isAuthor(workout.getCreatedBy().getUuid(),user)) {
-            throw new RuntimeException("Cannot add exercise: workout belongs to another user.");
+            throw new AccessDeniedException("Cannot add exercise: workout belongs to another user.");
         }
         
         Exercise exercise = exerciseService.getExerciseOrThrow(exId);
@@ -126,7 +126,7 @@ public class WorkoutService {
     public SetsDTO.Set addSetToWorkoutExercise(Long weId, SetsDTO.Create dto, User user) {
         WorkoutExercise workoutExercise = getWorkoutExerciseByIdOrThrow(weId);
         if (!isAuthor(workoutExercise.getCreatedBy().getUuid(),user)) {
-            throw new RuntimeException("Cannot add set: workout belongs to another user.");
+            throw new AccessDeniedException("Cannot add set: workout belongs to another user.");
         }
         WorkoutSet set = WorkoutSet.builder()
                                 .workoutExercise(workoutExercise)
@@ -146,7 +146,7 @@ public class WorkoutService {
     public void deleteExerciseFromWorkout(Long wId, Long exId, User user){
         Workout workout = getWorkoutOrThrow(wId);
         if (!isAuthor(workout.getCreatedBy().getUuid(), user)) {
-            throw new RuntimeException("Cannot : workout belongs to another user.");
+            throw new AccessDeniedException("Cannot : workout belongs to another user.");
         }
         WorkoutExercise workoutExercise = workoutExerciseRepository.findByWorkoutIdAndExerciseId(wId, exId)
                 .orElseThrow(() -> new EntityNotFoundException("Exercise with id:" + exId + " and workoutId:" + wId+ " not found"));
