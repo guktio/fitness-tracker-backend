@@ -3,28 +3,35 @@ package com.fitness.application.gym.plan.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fitness.application.base.BaseEntity;
+import com.fitness.application.users.entity.User;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
+@Setter
 @Builder
 @Entity
 @ToString(exclude = {"exercises"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class WorkoutPlan {
+public class WorkoutPlan extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,4 +59,9 @@ public class WorkoutPlan {
             exercise.setWorkoutPlan(null);
         }
     }
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "created_by_id", nullable = false)
+    User createdBy;
+
 }

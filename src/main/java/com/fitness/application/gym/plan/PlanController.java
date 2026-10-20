@@ -1,5 +1,10 @@
 package com.fitness.application.gym.plan;
 
+import java.util.UUID;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.security.CurrentUser;
 import com.fitness.application.users.entity.User;
 
@@ -34,10 +40,11 @@ public class PlanController {
 
     @PostMapping("/workout/plan")
     public ResponseEntity<PlansDTO.Plan> createWorkoutPlan(
-        @RequestBody PlansDTO.CreatePlan workoutPlan
+        @RequestBody PlansDTO.CreatePlan workoutPlan,
+        @CurrentUser User user
     ){
         log.info("POST /workout/plan {}", workoutPlan.toString());
-        return ResponseEntity.status(HttpStatus.OK).body(planService.createWorkoutPlan(workoutPlan));
+        return ResponseEntity.status(HttpStatus.OK).body(planService.createWorkoutPlan(workoutPlan, user));
     }
 
     @PostMapping("/workout/plan/{pid}/exercise/{eid}")
@@ -49,5 +56,14 @@ public class PlanController {
     ){
         log.info("POST /workout/plan/{}/exercise/{}?orderNum={}", pid, eid, orderNum);
         return ResponseEntity.status(HttpStatus.OK).body(planService.addExerciseToPlan(pid, eid, orderNum, user));
+    }
+
+    @GetMapping("/workout/plans")
+    public ResponseEntity<PageDTO<PlansDTO.Plan>> getPlansPage(
+        @RequestParam UUID user,
+        @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        log.info("GET /workout/plans {}", user);
+        return ResponseEntity.status(HttpStatus.OK).body(planService.getPlansPage(pageable,user));
     }
 }

@@ -53,11 +53,14 @@ Powered by **Java 21**, **Spring Boot**, **PostgreSQL**, and **Redis** for distr
   - Anatomical muscle categorization (Chest, Back, Arms, Legs, Core, etc.).
 - **Reusable Workout Plans**:
   - Design multi-exercise templates with custom ordering.
+  - Plans are **user-owned** — each plan is linked to its creator.
+  - Browse paginated plans filtered by owner UUID.
   - Instant one-click instantiation of an entire workout session from a saved plan.
 - **Live Workout Session Tracking**:
   - Active session state management (`IN_PROGRESS` $\rightarrow$ `COMPLETED`).
   - Granular set logging: records **Weight**, **Reps**, and **RPE** (Rate of Perceived Exertion).
   - Add, reorder, or delete exercises and sets dynamically during live training.
+  - State-guarded mutations — adding or removing exercises/sets is only permitted on `IN_PROGRESS` workouts.
   - Paginated history and user-specific workout slices.
 - **Distributed Redis Caching**:
   - Sub-millisecond response times on frequent reads (exercise details, plans, active sessions).
@@ -150,6 +153,7 @@ Base path: `/api/gym`
 | Method | Route | Description | Auth |
 | :--- | :--- | :--- | :---: |
 | `GET` | `/api/gym/workout/plan/{id}` | Retrieve workout plan by ID | Required |
+| `GET` | `/api/gym/workout/plans` | Paginated plans by owner (`?user={uuid}`) | Public |
 | `POST` | `/api/gym/workout/plan` | Create a new workout plan template | Required |
 | `POST` | `/api/gym/workout/plan/{pid}/exercise/{eid}` | Add an exercise to a plan (`?orderNum=`) | Required |
 

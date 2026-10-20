@@ -96,7 +96,7 @@ class PlanServiceTest {
     @Test
     void getWorkoutPlanDTO_whenFound_shouldReturnDto() {
         when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
-        when(planMapper.toWorkoutPlanDTO(plan)).thenReturn(planDTO);
+        when(planMapper.toPlanDTO(plan)).thenReturn(planDTO);
 
         PlansDTO.Plan result = planService.getWorkoutPlanDTO(1L);
 
@@ -110,9 +110,9 @@ class PlanServiceTest {
 
         when(planMapper.toEntity(createDTO)).thenReturn(plan);
         when(planRepository.save(plan)).thenReturn(plan);
-        when(planMapper.toWorkoutPlanDTO(plan)).thenReturn(planDTO);
+        when(planMapper.toPlanDTO(plan)).thenReturn(planDTO);
 
-        PlansDTO.Plan result = planService.createWorkoutPlan(createDTO);
+        PlansDTO.Plan result = planService.createWorkoutPlan(createDTO, user);
 
         assertNotNull(result);
         assertEquals("Full Body Plan", result.title());
@@ -124,7 +124,7 @@ class PlanServiceTest {
         when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
         when(exerciseService.getExerciseOrThrow(10L)).thenReturn(exercise);
         when(planRepository.save(plan)).thenReturn(plan);
-        when(planMapper.toWorkoutPlanDTO(plan)).thenReturn(planDTO);
+        when(planMapper.toPlanDTO(plan)).thenReturn(planDTO);
 
         PlansDTO.Plan result = planService.addExerciseToPlan(1L, 10L, 1, user);
 

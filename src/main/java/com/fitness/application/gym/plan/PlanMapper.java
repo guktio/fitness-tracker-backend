@@ -17,7 +17,7 @@ public class PlanMapper {
 
     private final ExerciseMapper exerciseMapper;
 
-    public PlansDTO.Plan toWorkoutPlanDTO(WorkoutPlan workoutPlan) {
+    public PlansDTO.Plan toPlanDTO(WorkoutPlan workoutPlan) {
         return PlansDTO.Plan.builder()
                 .id(workoutPlan.getId())
                 .title(workoutPlan.getTitle())

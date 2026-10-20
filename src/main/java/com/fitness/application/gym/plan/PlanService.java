@@ -1,10 +1,14 @@
 package com.fitness.application.gym.plan;
 
+import java.util.UUID;
+
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fitness.application.base.dto.PageDTO;
 import com.fitness.application.gym.exercises.ExerciseService;
 import com.fitness.application.gym.exercises.entity.Exercise;
 import com.fitness.application.gym.plan.entity.PlanExercise;
@@ -40,17 +44,18 @@ public class PlanService {
         key = "#id"
     )
     public PlansDTO.Plan getWorkoutPlanDTO(Long id){
-        return planMapper.toWorkoutPlanDTO(getWorkoutPlanOrThrow(id));
+        return planMapper.toPlanDTO(getWorkoutPlanOrThrow(id));
     }
 
     @CachePut(
         value = "plan",
         key = "#result.id"
     )
-    public PlansDTO.Plan createWorkoutPlan(PlansDTO.CreatePlan dto){
+    public PlansDTO.Plan createWorkoutPlan(PlansDTO.CreatePlan dto, User user){
         WorkoutPlan workoutPlan = planMapper.toEntity(dto);
+        workoutPlan.setCreatedBy(user);
         WorkoutPlan saved = planRepository.save(workoutPlan);
-        return planMapper.toWorkoutPlanDTO(saved);
+        return planMapper.toPlanDTO(saved);
     }
     
     @Transactional
@@ -71,8 +76,16 @@ public class PlanService {
         plan.getExercises().add(pExercise);
         WorkoutPlan newPlan = planRepository.save(plan);
         log.info(newPlan.toString());
-        return planMapper.toWorkoutPlanDTO(newPlan);
+        return planMapper.toPlanDTO(newPlan);
     }
 
-    
+    public PageDTO<PlansDTO.Plan> getPlansPage(Pageable pageable ,UUID user){
+        var page = planRepository.getPlansByCreatedByUuid(pageable,user);
+        return new PageDTO<PlansDTO.Plan>(
+            page.getContent().stream().map(planMapper::toPlanDTO).toList(),
+            page.getPageable().getPageNumber(),
+            page.getTotalPages()
+        );
+    }
+
 }
