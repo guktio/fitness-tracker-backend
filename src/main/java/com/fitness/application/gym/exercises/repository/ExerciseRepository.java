@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.fitness.application.gym.exercises.entity.Exercise;
@@ -32,11 +33,21 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
     })
     Optional<Exercise> findById(Long id);
 
-    @Query("""
-        SELECT e FROM Exercise e
-        JOIN e.exerciseMuscles.primaryMuscles as pm
-        WHERE (:muscle IS NULL OR pm.muscle  = :muscle)
-        AND (:createdBy IS NULL or e.createdBy.uuid = :createdBy)
-    """)
-    Page<Exercise> findByFilter(Muscle muscle, UUID createdBy, Pageable pageable);
+    @Query(
+    value = """
+        SELECT DISTINCT e FROM Exercise e
+        LEFT JOIN e.exerciseMuscles.primaryMuscles pm
+        WHERE (:muscle IS NULL OR pm.muscle = :muscle)
+        AND (:createdBy IS NULL OR e.createdBy.uuid = :createdBy)
+        """,
+        countQuery = """
+            SELECT COUNT(DISTINCT e) FROM Exercise e
+            LEFT JOIN e.exerciseMuscles.primaryMuscles pm
+            WHERE (:muscle IS NULL OR pm.muscle = :muscle)
+            AND (:createdBy IS NULL OR e.createdBy.uuid = :createdBy)
+        """
+        )
+    Page<Exercise> findByFilter(@Param("muscle") Muscle muscle, 
+                                @Param("createdBy") UUID createdBy, 
+                                Pageable pageable);
 }

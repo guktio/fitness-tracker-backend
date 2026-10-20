@@ -1,5 +1,6 @@
 package com.fitness.application.gym.exercises.entity;
 
+import com.fitness.application.base.BaseEntity;
 import com.fitness.application.users.entity.User;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -23,10 +24,10 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode 
+@EqualsAndHashCode(callSuper = false)
 @ToString(callSuper = true)
 @Table(name = "exercise")
-public class Exercise {
+public class Exercise extends BaseEntity{
 
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
